@@ -1,6 +1,6 @@
 # ReState
 
-Code for the paper **"ReState: A Multi-Resource Decision for Remote KV Hits in Disaggregated LLM Serving"** (Wenbin Wang, manuscript, 2026).
+Code for the paper **"ReState: Contention-Aware Decisions on Remote KV State for Edge–Cloud LLM Serving"**.
 
 When a request's prompt prefix is already cached as KV state on another GPU (a *holder*), the serving system can:
 
@@ -109,10 +109,9 @@ If you use this code, please cite the paper; see also `CITATION.cff`:
 
 ```bibtex
 @article{wang2026restate,
-  title   = {ReState: A Multi-Resource Decision for Remote KV Hits in Disaggregated LLM Serving},
-  author  = {Wang, Wenbin},
-  year    = {2026},
-  note    = {Manuscript}
+  title   = {ReState: Contention-Aware Decisions on Remote KV State for Edge--Cloud LLM Serving},
+  author  = {Wang, Wenbin and Wang, Runan and Liu, Jiangchuan and Hu, Xiping},
+  year    = {2026}
 }
 ```
 

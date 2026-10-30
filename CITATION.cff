@@ -1,19 +1,30 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite the paper below."
 title: "ReState"
-abstract: "Research artifact for ReState: multi-holder runtime, planners, experiment pipelines and analysis for remote KV hits in disaggregated LLM serving."
+abstract: "Research artifact for ReState: multi-holder runtime, planners, experiment pipelines and analysis for contention-aware decisions on remote KV state in edge-cloud LLM serving."
 authors:
   - family-names: "Wang"
     given-names: "Wenbin"
+  - family-names: "Wang"
+    given-names: "Runan"
+  - family-names: "Liu"
+    given-names: "Jiangchuan"
+  - family-names: "Hu"
+    given-names: "Xiping"
 repository-code: "https://github.com/WenbinWang12/ReState"
 license: MIT
 version: "1.0.0"
 date-released: "2026-10-30"
 preferred-citation:
   type: article
-  title: "ReState: A Multi-Resource Decision for Remote KV Hits in Disaggregated LLM Serving"
+  title: "ReState: Contention-Aware Decisions on Remote KV State for Edge–Cloud LLM Serving"
   authors:
     - family-names: "Wang"
       given-names: "Wenbin"
+    - family-names: "Wang"
+      given-names: "Runan"
+    - family-names: "Liu"
+      given-names: "Jiangchuan"
+    - family-names: "Hu"
+      given-names: "Xiping"
   year: 2026
-  notes: "Manuscript"
