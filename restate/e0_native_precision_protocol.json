@@ -1,0 +1,44 @@
+{
+  "protocol": "e0-native-fetch-precision-v1",
+  "purpose": "Preregister native cache-fetch correctness in FP32 and BF16 without post-result tolerance relaxation.",
+  "default_dtype": "float32",
+  "supported_dtypes": ["float32", "bfloat16"],
+  "attention": "eager",
+  "logit_atol": 0.0001,
+  "logit_rtol": 0.0001,
+  "comparison": "Every vocabulary logit at every generated step must be finite and satisfy abs(candidate-reference) <= atol + rtol*abs(reference); all greedy token IDs must match.",
+  "cases": [[64, 16, 16], [128, 7, 16], [257, 17, 32]],
+  "precision_policies": {
+    "float32": {
+      "required_checks": ["full_vs_local", "full_vs_fetch", "local_vs_fetch"],
+      "note": "Retain all three original numerical and greedy-token comparisons."
+    },
+    "bfloat16": {
+      "required_checks": ["local_vs_fetch"],
+      "diagnostic_checks": ["full_vs_local", "full_vs_fetch"],
+      "primary_reference": "Independent native HF prefix prefill followed by the same batch-shaped suffix and one-token greedy decode used by the restored cache path.",
+      "matmul_allow_bf16_reduced_precision_reduction": false,
+      "note": "Full recompute uses different prefill chunking and remains a numerical diagnostic. Only the prespecified local-cache versus fetched-cache comparison gates BF16 logits and tokens; a failure is reported without widening tolerances."
+    }
+  },
+  "common_requirements": [
+    "Actual floating model parameters and transferred cache tensors match the requested dtype.",
+    "Peer identity includes model revision and file-manifest hash, source hashes, requested/model/wire dtype, numerical backend settings, and this protocol hash.",
+    "TF32 is disabled and float32 matmul precision is highest; BF16/FP16 reduced-precision reduction settings are recorded.",
+    "Holder prefix prefill and CUDA synchronization precede the cached-hit request barrier.",
+    "Canonical cache metadata and exact tensor bytes have identical SHA256 before transfer, after reception, and after restoration on the destination GPU.",
+    "The restored prefix cache has exactly prefix_length tokens and the expected layer/head dimensions and dtype.",
+    "Full, local-cache, and fetched-cache final lengths all equal prefix + suffix + generated - 1.",
+    "The hit path forwards the suffix once and then one token per decode step; it never prefills the prefix.",
+    "All three original cases must pass; cross-node execution requires two distinct hosts."
+  ],
+  "diagnostics": [
+    "Record each comparison's maximum/per-step logit error, tolerance ratio, finiteness, greedy-token equality, and whether it gates acceptance.",
+    "Record the independently generated local-prefix hash and whether it equals the received prefix; transfer integrity itself compares holder, received, and restored hashes."
+  ],
+  "limitations": [
+    "Correctness harness only; Gloo TCP with CPU staging is not GPU-native transport or serving-performance evidence.",
+    "BF16 acceptance does not establish numerical chunk-invariance between full prefill and cached-prefix execution.",
+    "No selector, progressive repair, or overlap claim is made by this harness."
+  ]
+}

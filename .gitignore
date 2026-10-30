@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+env/
+
+# Experiment outputs and large artifacts (never commit)
+results/
+runs/
+RUN/
+*.nsys-rep
+*.sqlite
+*.safetensors
+*.bin
+models/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

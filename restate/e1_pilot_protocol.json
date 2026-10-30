@@ -1,0 +1,130 @@
+{
+  "schema_version": 2,
+  "stage": "E1",
+  "status": "design_only_not_authorized_to_submit_by_this_file",
+  "purpose": "Check whether five real actions can be compared correctly and measured consistently; this pilot is not a statistically conclusive paper result.",
+  "hypothesis": "Action rankings may vary with prefix size, measured transfer capacity, and remaining generation; an action is allowed to be dominated everywhere in the sampled grid.",
+  "platform": {
+    "gpu": "NVIDIA A100 80GB",
+    "gpu_count": 2,
+    "physical_host_count": 2,
+    "gpus_per_host": 1,
+    "tensor_parallel_degree_per_worker": 1,
+    "precision": "BF16 weights and KV; identical attention implementation and accumulation policy for all actions",
+    "model": "Qwen/Qwen2.5-14B",
+    "revision": "97e1e76335b7017d8f67c08a19d103c0504298c9",
+    "canonical_manifest_sha256": "0ef3c81db38c9d2fe14959dc6e8abb5780bbf826b264dbacbdbf80d586cc5e99",
+    "model_file_bytes": 29551669739,
+    "placement": "Both physical hosts must verify the same canonical manifest and all model file hashes before allocation is considered ready.",
+    "hardware_policy": "Every action uses this same chosen platform; A6000 functional runs and original A800 performance results stay separate without rescaling."
+  },
+  "start_gates": [
+    "Do not run until main-model E0 passes on both A100 hosts for recompute, native fetch, holder execution, remote attention, and fixed progressive repair at BF16/TP1.",
+    "Match current E0: use one full-prefix prefill call for each P, followed by tokenwise suffix calls. A full concatenated prefix-plus-suffix forward is a separate numerical diagnostic, not this pilot's strict reference.",
+    "All five actions must produce finite logits within a documented E0-approved tolerance and exactly matching greedy token sequences for the paired pilot inputs; do not relax tolerance after seeing performance.",
+    "A common performance runner, real action implementations, request-level transport accounting, and application rate cap must exist and pass validation.",
+    "Both hosts must have sufficient verified local model storage and GPU memory; second-host staging and E0 completion are pending evidence, not assumed ready."
+  ],
+  "common_request_semantics": {
+    "batch_size": 1,
+    "concurrent_foreground_requests": 1,
+    "holder_background_load": "None in this pilot; contention belongs to later experiments.",
+    "prefix_prefill": "One forward call containing the complete P-token prefix, where P is 128 or 1024; identical prefix construction for every action and reference.",
+    "future_long_context": "If longer contexts later require chunking, create a separate common chunk protocol for every action and recalibrate correctness and performance. This pilot introduces no chunking design.",
+    "suffix_tokens": 16,
+    "suffix_execution": "One token per forward call for every action and its reference.",
+    "generation": "Greedy, fixed token count, EOS stopping disabled consistently; no sampling or speculative decoding.",
+    "reference": "The same model revision, tokenizer, prompt tokens, position IDs, masks, cache layout, single full-prefix prefill, suffix tokenwise calls, and tokenwise decode shapes as the action under test.",
+    "prefix_preparation": "For cache-hit actions, materialize the same prefix on the holder before the request barrier. For recompute, destination prefix reconstruction is inside the timed request. Destination starts without a reusable prefix for every action.",
+    "weights_and_engine": "Both models and kernel paths are warm before every measured trial. All actions use one common engine, attention kernel policy, CPU staging policy, transport backend, rate limiter, and response destination.",
+    "request_inputs": "All actions receive identical prefix/suffix token IDs and prefix identifiers. Input residency and request setup boundaries are fixed and documented.",
+    "paired_trials": "Use the same deterministic input within each paired comparison. Reset per-request caches and action state before the barrier; retain only the explicitly allowed holder prefix.",
+    "barrier": "A readiness barrier occurs before request acceptance. It may exclude common preparation only; action selection, per-request control/setup, serialization, queueing, and request-specific connection work remain inside request latency.",
+    "native_engine_control": "Retain a separate native-HF tokenwise suffix/decode control with the identical full-prefix construction to quantify common custom-engine overhead; do not silently label the prototype optimized production serving."
+  },
+  "actions": [
+    {
+      "id": "recompute",
+      "timed_work": "Rebuild the complete P-token prefix in one timed prefill call, then run tokenwise suffix and generation at the destination."
+    },
+    {
+      "id": "native_fetch",
+      "timed_work": "Transfer and install the real prepared BF16 prefix KV, then run suffix and generation at the destination; include sender staging, copies, and setup."
+    },
+    {
+      "id": "holder",
+      "timed_work": "Send the actual request to the existing holder, execute suffix and generation there, and deliver each generated token to the common response destination."
+    },
+    {
+      "id": "remote_attention",
+      "timed_work": "Run genuine remote attention against holder-resident prefix KV, with real activation/result transfer and destination continuation."
+    },
+    {
+      "id": "fixed_progressive_repair",
+      "timed_work": "Execute a fixed, documented E0-validated repair schedule with real cache migration and continuation; log progress and any duplicated work.",
+      "schedule_status": "Must be frozen before pilot measurements; no schedule tuning on measured trial outcomes."
+    }
+  ],
+  "grid": {
+    "prefix_tokens": [
+      128,
+      1024
+    ],
+    "application_cap_mbps_decimal": [
+      100,
+      1000
+    ],
+    "generated_tokens": [
+      16,
+      64
+    ],
+    "cell_count": 8,
+    "rate_cap_scope": "Apply the same per-direction cap to all inter-host request data/control traffic for every action; report the achieved rate. These values are proposed application caps, not measured physical-link speeds.",
+    "rtt": "No added delay in this pilot; record measured baseline RTT separately.",
+    "warmups_per_action_per_cell": 1,
+    "measured_repetitions_per_action_per_cell": 3,
+    "total_warmup_trials": 40,
+    "total_measured_trials": 120,
+    "ordering": "Record a fixed random seed and randomize action order within paired repetitions to reduce order effects.",
+    "interpretation": "The grid and repetition counts test feasibility and coarse action ordering only. Preserve raw trials; report medians/ranges descriptively without significance or tail guarantees."
+  },
+  "measurement": {
+    "main_timer": "Use one destination monotonic clock. Record t_accept before action-specific work, t_first_token, t_final_token, and t_settled after required completion acknowledgement and background drain. Token-completion and settled latencies are distinct; never subtract clocks from different hosts.",
+    "ttft": "Request acceptance to delivery of the first generated token, including suffix processing and all request-specific setup and queueing.",
+    "itl_and_tbt": "Inter-token latency/time-between-tokens use the same consecutive token-delivery timestamp differences. Retain the raw sequence; do not count these aliases as independent metrics.",
+    "completion_latency": "Request acceptance to final token delivery; additionally report time until any request-owned background repair/transfer finishes if it outlives token generation.",
+    "tail_reporting": "No p95/p99 claim from three repetitions or a five-repeat shortcut. Formal request-level tails require the later E7 workload, enough independent request samples, recorded sample counts, and an explicit estimation protocol.",
+    "bytes": "Required: transmitted tensor payload bytes and application frame bytes (length/header/payload) accepted by socket sends, per direction and request, reconciled against peer receive counts. Optional: separately validated physical-wire capture with its layer/scope stated. Application counts do not include TCP/IP headers, retransmissions, or Ethernet framing.",
+    "wire_accounting_gate": "Lack of validated physical-wire capture must be marked physical_wire_bytes=null and wire_measurement_available=false. It does not block this action-latency pilot, whose bandwidth treatment is an explicitly named application socket-byte cap; it forbids physical network bandwidth-savings or NIC-traffic claims.",
+    "cpu_and_queues": "End-to-end latency includes sender CPU serialization/staging, receiver handling, queue waits, rate-limiter waits, GPU copies, synchronization, and response delivery. Report their breakdown only using a separate instrumented run when needed.",
+    "performance_path_exclusions": [
+      "No full-vocabulary diagnostic logits are transferred in main performance trials.",
+      "No cache hashing or reference recomputation is performed inside the main performance interval.",
+      "No CUDA per-operation timing events, NVTX ranges, profiler capture, or diagnostic per-operation synchronization is enabled in the main performance run."
+    ],
+    "separate_diagnostics": "Run correctness/logit comparisons and CUDA-event/NVTX profiling separately with matching configurations. A full concatenated prefix-plus-suffix forward may be retained as a separate numerical diagnostic; it does not replace the common full-prefix-then-tokenwise-suffix reference. Preserve links to their trial/configuration IDs, and do not combine diagnostic timing with performance samples.",
+    "settled_latency": "t_settled - t_accept; includes final completion acknowledgement and request-owned background drain.",
+    "post_token_drain_latency": "t_settled - t_final_token; report separately instead of adding it silently to response completion."
+  },
+  "required_components_not_asserted_ready": [
+    "Main-model, same-shape BF16 E0 evidence for all five actions on both hosts.",
+    "Unified request runner with common warm-state preparation, deterministic paired inputs, and actual response delivery timestamps.",
+    "An implemented and fixed progressive repair schedule plus verified remote attention.",
+    "A shared application rate limiter with measured achieved throughput and complete request traffic coverage.",
+    "Separate correctness, profiling, and minimally instrumented performance modes.",
+    "Verified request-level tensor payload and application-frame accounting, reconciled sends/receives, setup/queue completion tracking, and an explicit null marker for any unmeasured physical wire bytes."
+  ],
+  "stop_and_reporting_rules": [
+    "Stop on model/revision/hash mismatch, failed E0, invalid numeric output, greedy mismatch, missing real action, OOM, or differing prefix/suffix call shapes.",
+    "Stop and repair the harness if diagnostic traffic enters the performance path or action-specific work falls outside the defined timer.",
+    "Preserve failures and dominated actions. Do not remove unfavorable cells, silently change caps, or manufacture a region where an action wins.",
+    "Report ties and unstable orderings as unresolved; three repetitions cannot establish a robust crossover.",
+    "Any revised grid or execution schedule creates a new protocol version, with reasons recorded before rerunning."
+  ],
+  "resources_and_completion": {
+    "allocation": "Two A100 80GB GPUs on two physical hosts; actual CPU/RAM/time requests follow measured main-model E0 and first pilot timings.",
+    "gpu_hour_budget": "Not yet estimated. After an instrumented feasibility run, estimate allocated GPU-hours as two times allocation wall-hours, including initialization, preparation, warmups, barriers, retries, and measured trials; update from scheduler accounting.",
+    "completion": "All eight cells retain three valid paired measurements for all five real actions, correct separation of diagnostics, validated application-frame traffic accounting, and documented failures/uncertainty. Record separately whether physical-wire capture exists. Completion establishes prototype feasibility only; formal performance and tail claims remain downstream."
+  },
+  "revision_reason": "Before any E1 run: disambiguate final-token vs settled latency; make application-frame byte accounting the required transport metric and report physical wire bytes only when separately validated."
+}

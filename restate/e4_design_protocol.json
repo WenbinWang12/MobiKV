@@ -1,0 +1,561 @@
+{
+  "schema_version": 1,
+  "design_id": "restate-E4-full-v1-draft",
+  "stage": "E4",
+  "status": "CPU_design_only_waiting_for_prior_full_stages_and_new_E4_implementation",
+  "executable_plan": false,
+  "GPU_execution_authorized_by_this_file": false,
+  "E4_complete": false,
+  "paper_stage_complete": false,
+  "objective": "Measure how simultaneous remote-attention requests and real KV migration interfere on one shared application transport budget and on each selected GPU; establish whether coordination improves foreground service while exposing its migration, competing-request and fairness costs.",
+  "claim_scope": {
+    "full_means": "Complete this declared two-host mechanism matrix, paired solo counterfactuals, accounting, diagnostics, profiles and independent review. It does not mean that a two-request pilot establishes production tails, stable queue capacity or joint SLO compliance.",
+    "relation_to_E1_E2_E3": "E1 varies isolated action regimes with controlled same-GPU load; E2 compares continuation states; E3 changes the environment within a request. E4 holds actions and the exogenous environment fixed and changes shared-resource scheduling among genuinely concurrent requests/transfer jobs.",
+    "candidate_claim": "A particular implemented scheduler may reduce foreground queuing under the measured bottleneck, at an explicitly measured cost to other requests and transfer progress. Negative, tied and starvation outcomes remain results.",
+    "not_novel_by_itself": [
+      "RPC priority, finite transfer chunks, weighted round robin, aging, or pause/resume",
+      "Using two sockets while giving each its own full-rate budget",
+      "A faster foreground request obtained by omitting required migration work"
+    ],
+    "excluded_claims": [
+      "Production request p95/p99, stationary tail probabilities, or an SLO guarantee from eight paired blocks",
+      "A new scheduling optimality, stability, fairness or starvation-freedom theorem",
+      "Physical NIC bytes, wireless bandwidth, cellular contention or device mobility inferred from an application cap",
+      "Independent competing network paths, multi-holder routing or three-host interference on this two-host setup",
+      "A speedup compared with historical A800, Babel A100/L40S or SUTD cohorts",
+      "A jointly learned admission/action/placement controller; E4 fixes offered work and action semantics"
+    ]
+  },
+  "source_documents": [
+    {
+      "path": "restate_babel/experiment_roadmap.json",
+      "sha256": "90fe7807fa7d05c76e635bbfcffef1442df1b102f449d9ea9b51edf8ff8cf8b3"
+    },
+    {
+      "path": "restate_babel/campaign_plan.py",
+      "sha256": "72869d1a861e7b45362be63f88e37adf87ef9feb5c00ea60658817685740a372"
+    },
+    {
+      "path": "restate_direct/e1_full_design.json",
+      "sha256": "1cb9f31322e698ce329b3a3c25dfcc40ee4ef28bc7a452d720046c2e268e31ca"
+    },
+    {
+      "path": "restate_direct/e2_full_design.json",
+      "sha256": "988874039aa9324c644229f197590252ed7d9ab72b5d8745d9fa007c1d4999ab"
+    },
+    {
+      "path": "restate_direct/e3_full_design.json",
+      "sha256": "4d78a4c0512361e5a8e6fd2d0e9860630a992464ccbe132db09397606305cb66"
+    },
+    {
+      "path": "restate_direct/e1_full/runtime/e4_e6_mechanisms.py",
+      "sha256": "6afd507d480f4a3f02737391a98c301c9008fecd214ceea0d87ddf54801b2664"
+    },
+    {
+      "path": "restate_direct/e1_full/runtime/compute_queue.py",
+      "sha256": "2e7f108f386de1a9e2611a59559d31ddabe29c8ea7042d3361181ca881d4c618"
+    },
+    {
+      "path": "restate_direct/e1_full/runtime/campaign_server.py",
+      "sha256": "b0166cbb7ee36bd254363d909fb4c9a56fdc55bb4494c906fd963ff756e761cc"
+    }
+  ],
+  "stage_order": {
+    "required": [
+      "accepted main14B E0 suite and overlap profile",
+      "accepted E1 smoke then E1 full including profiles",
+      "accepted E2 smoke then E2 full",
+      "accepted E3 smoke then E3 full",
+      "new E4 smoke bound to final E4 sources",
+      "frozen E4 full matrix and independent raw review"
+    ],
+    "historical_smoke": "The old FIFO/RPC-first two-request smoke is historical functional evidence. The interrupted direct E4 smoke and any bounded pilot cannot grant this full-stage acceptance.",
+    "scientific_source_change": "New scheduling/instrumentation requires CPU component checks and main-model E4 smoke. Changes to mathematical kernels, cache ownership or attention routes additionally require the affected E0 correctness checks; accepted E0 is not transferable by a naked passed flag."
+  },
+  "cohort": {
+    "cluster_id": "direct-a100-two-hosts-20261014",
+    "scheduler": "direct",
+    "topology": "two_physical_hosts",
+    "physical_hosts": 2,
+    "selected_GPUs": 2,
+    "GPUs_per_host": 1,
+    "tensor_parallel_size": 1,
+    "GPU_target": "NVIDIA A100 80GB PCIe; verify actual UUID/name/memory on each host",
+    "model_id": "Qwen/Qwen2.5-14B",
+    "model_revision": "97e1e76335b7017d8f67c08a19d103c0504298c9",
+    "model_manifest_sha256": "0ef3c81db38c9d2fe14959dc6e8abb5780bbf826b264dbacbdbf80d586cc5e99",
+    "dtype": "bfloat16",
+    "attention": "Same accepted eager implementation and precision flags across every method",
+    "CPU_threads_per_worker": 2,
+    "source_role": "One resident model/selected GPU holds all immutable prefixes and serves all remote attention.",
+    "destination_role": "One resident model/selected GPU executes all request-local computation and receives actual KV tensors.",
+    "unused_GPUs": "Each VM exposes one selected physical A100 GPU; TP1 per worker, two GPUs total.",
+    "isolation": "Reject unrelated GPU compute processes. Owned intentional background compute is separately identified and reported.",
+    "identity": "Record actual hostname, boot ID, DMI UUID, internal IP, GPU UUID, driver, software, source/model/input/plan hashes and run IDs. No invented Slurm identity or synchronized-host-clock assumption."
+  },
+  "shared_semantics": {
+    "prefix_and_suffix": "Prepare each holder immutable prefix with one complete P-token prefill before group acceptance for every method. Destination starts empty. All request suffixes are tokenwise S16, all foreground/background requests use fixed executor G64 and public cap128; the controller does not see realized G.",
+    "prefix_identity": "Foreground A and each competing request B1/B2/B3 use distinct frozen input identities and separate mutable delta caches; no cache-hit or shared-request-state advantage varies with method. All methods in a block reuse the identical token arrays.",
+    "foreground": {
+      "role": "A",
+      "action": "remote",
+      "P": 1024,
+      "S": 16,
+      "G_executor_only": 64,
+      "public_output_cap": 128
+    },
+    "request_start": "All offered jobs in a group exist before a common destination acceptance timestamp. Release real worker threads from one barrier after setup-independent prefix preparation; include thread dispatch, batch/control setup and waits from that timestamp. Record per-request executor entry and observed source release/ACK intervals. Do not claim simultaneous GPU execution or cross-host timestamp synchronization.",
+    "bottleneck": "One outgoing SharedBandwidthCoordinator per physical host covers every control, RPC and bulk stream in that direction, with one total application-byte cap. Reverse direction has its own identically configured cap. No per-request or per-socket clone gets an additional capacity budget.",
+    "added_RTT_ms": 0,
+    "network_path": "Same scoped experiment-port network path on both hosts with zero requested added delay. Record actual baseline RTT and verified netem state; no RTT sensitivity axis is added here.",
+    "GPU_queue": "Use the same FIFO ready-compute queue for every method: whole prefix/local-token operations, remote compute segments release admission during blocking RPC and rejoin after reply; transport copies are outside the compute queue. Do not hold a GPU lease while waiting for network service or change compute priority for one network method.",
+    "request_settlement": "A request is settled only after its final token and its own required transfers, terminal/control acknowledgements and ownership cleanup. Shared group batch_done is a group timestamp, not a substitute for each request's actual settlement. Group end waits for all offered jobs and owned background drain; both token completion and settled time are preserved.",
+    "reset": "After each group or solo trial, drain all owned streams/requests, release every request-local delta/prefix reference, reset target cache and scheduling state, and preserve only the declared immutable holder prefixes. No repair-retention cache hit carries between methods.",
+    "persistent_engine": "Keep weights, kernels and model instances resident across a session; record initialization/restarts in resource cost, exclude them from request latency. Never compare one method with a cold model to another with a warm model."
+  },
+  "methods": [
+    {
+      "id": "coarse_fifo",
+      "chunk_bytes": 1048576,
+      "scheduler": "FIFO across ready socket chunks; same shared total cap",
+      "role": "Uncoordinated coarse-granularity baseline; not an unbounded whole-prefix write."
+    },
+    {
+      "id": "fine_fifo",
+      "chunk_bytes": 16384,
+      "scheduler": "FIFO across ready socket chunks",
+      "role": "Isolates chunk granularity from RPC priority."
+    },
+    {
+      "id": "fixed_weighted_3to1",
+      "chunk_bytes": 16384,
+      "scheduler": "Work-conserving byte-deficit round robin with RPC:bulk weights3:1; byte quanta3Q andQ, FIFO within each class",
+      "role": "Strong fixed-share baseline; includes all control/RPC bytes in the RPC class. Idle capacity may be borrowed. No future queue or token knowledge."
+    },
+    {
+      "id": "strict_rpc_first",
+      "chunk_bytes": 16384,
+      "scheduler": "RPC class before bulk at each finite chunk boundary; FIFO within class",
+      "role": "Existing activation-priority baseline and aging-removal ablation. Possible bulk starvation is measured, not concealed."
+    },
+    {
+      "id": "age_bounded_rpc_first",
+      "chunk_bytes": 16384,
+      "scheduler": "Normally RPC-first; if an eligible bulk stream has waited at least max(0.005s,4*Q*8/C), grant exactly one oldest eligible bulk chunk next, then return to RPC-first. FIFO by ticket within each class; age is from the local pending-ticket enqueue timestamp; Q=16384, C=current fixed directional cap in bit/s.",
+      "role": "Untrained, predeclared contention-aware candidate. Uses only actual ready queues and elapsed age. Parameters are fixed before data, not chosen to make this cohort win. This is an implementation candidate, not a novelty theorem."
+    },
+    {
+      "id": "no_migration_reference",
+      "chunk_bytes": 16384,
+      "scheduler": "fine_fifo",
+      "role": "In transfer-isolation cells omit the transfer-only job; in coupled cells execute every B request as remote instead of repair. Same offered decoding requests but absent target-cache retention; therefore not an equal-migration-work scheduler and excluded from transfer-completion Pareto rankings."
+    }
+  ],
+  "scheduling_contract": {
+    "granularity": "Finite socket chunks may split wire frames on separate connections; FIFO/priority acts only between chunks. Receiver publishes a KV layer only after its full K/V tensors and actual CUDA readiness. No half-frame cancellation or partially received layer is treated as usable cache.",
+    "costs": "Grant wait, pacing wait, socket write/backpressure, frame encoding/decoding, sender/receiver CPU work and DtoH/HtoD copies remain inside the real request/group interval. No scheduler receives free out-of-budget control traffic.",
+    "scope_of_age_bound": "The age threshold triggers next-selection preference only. Nonpreemptive active writes, pacing, unavailable GPU data and OS/network stalls preclude a real-time wait bound; do not report starvation freedom as proved.",
+    "byte_weighting": "Charge actual requested/returned bytes and keep cancelled/partially written reservations distinct; weighted service must operate on byte deficits, not frame count. Every method uses the same framing and tensor representation.",
+    "CPU_checks_before_smoke": [
+      "No aggregate over-budget credit or independent per-flow budget",
+      "Exact FIFO/class/aging order on deterministic ready queues",
+      "Partial send, blocked send, cancellation, shutdown and error propagation",
+      "Weighted service with unequal frame sizes and idle-class borrowing",
+      "No age reset that silently prevents an old bulk ticket from becoming eligible",
+      "No lock held across control receive while a worker needs that lock to finish"
+    ]
+  },
+  "cells": [
+    {
+      "id": "I00",
+      "module": "transfer_isolation",
+      "migration_P": 1024,
+      "rate_bps": 100000000,
+      "repair_requests": 0,
+      "transfer_only_jobs": 1,
+      "load_location": "none"
+    },
+    {
+      "id": "I01",
+      "module": "transfer_isolation",
+      "migration_P": 1024,
+      "rate_bps": 1000000000,
+      "repair_requests": 0,
+      "transfer_only_jobs": 1,
+      "load_location": "none"
+    },
+    {
+      "id": "I02",
+      "module": "transfer_isolation",
+      "migration_P": 4096,
+      "rate_bps": 100000000,
+      "repair_requests": 0,
+      "transfer_only_jobs": 1,
+      "load_location": "none"
+    },
+    {
+      "id": "I03",
+      "module": "transfer_isolation",
+      "migration_P": 4096,
+      "rate_bps": 1000000000,
+      "repair_requests": 0,
+      "transfer_only_jobs": 1,
+      "load_location": "none"
+    },
+    {
+      "id": "C00",
+      "module": "coupled_requests",
+      "migration_P": 4096,
+      "rate_bps": 100000000,
+      "repair_requests": 1,
+      "transfer_only_jobs": 0,
+      "load_location": "none"
+    },
+    {
+      "id": "C01",
+      "module": "coupled_requests",
+      "migration_P": 4096,
+      "rate_bps": 1000000000,
+      "repair_requests": 1,
+      "transfer_only_jobs": 0,
+      "load_location": "none"
+    },
+    {
+      "id": "C02",
+      "module": "coupled_requests",
+      "migration_P": 4096,
+      "rate_bps": 100000000,
+      "repair_requests": 3,
+      "transfer_only_jobs": 0,
+      "load_location": "none"
+    },
+    {
+      "id": "C03",
+      "module": "coupled_requests",
+      "migration_P": 4096,
+      "rate_bps": 1000000000,
+      "repair_requests": 3,
+      "transfer_only_jobs": 0,
+      "load_location": "none"
+    },
+    {
+      "id": "L00",
+      "module": "coupled_requests",
+      "migration_P": 4096,
+      "rate_bps": 1000000000,
+      "repair_requests": 1,
+      "transfer_only_jobs": 0,
+      "load_location": "holder"
+    },
+    {
+      "id": "L01",
+      "module": "coupled_requests",
+      "migration_P": 4096,
+      "rate_bps": 1000000000,
+      "repair_requests": 3,
+      "transfer_only_jobs": 0,
+      "load_location": "holder"
+    },
+    {
+      "id": "L02",
+      "module": "coupled_requests",
+      "migration_P": 4096,
+      "rate_bps": 1000000000,
+      "repair_requests": 1,
+      "transfer_only_jobs": 0,
+      "load_location": "destination"
+    },
+    {
+      "id": "L03",
+      "module": "coupled_requests",
+      "migration_P": 4096,
+      "rate_bps": 1000000000,
+      "repair_requests": 3,
+      "transfer_only_jobs": 0,
+      "load_location": "destination"
+    }
+  ],
+  "module_contracts": {
+    "transfer_isolation": "One remote request A plus a separate transfer-only immutable prefix job: actually read source GPU KV, serialize, send through the same directional budget, deserialize and publish all48 destination GPU layers. The transfer job does no model decode, separating transfer/copy/network interference from competing request compute. It is actual future-use cache materialization, not a dummy byte array. No-migration reference offers only A and has no completed transfer; its empty migration metric is null, never zero or instantaneous success.",
+    "coupled_requests": "A remains remote for all64 tokens. B1 or B1/B2/B3 each performs actual progressive repair plus64 generated tokens under the same shared source/destination GPU queues and transport budgets. Fully received layers may naturally localize B. The no-migration reference runs each B remotely for64 tokens. This changes remote compute and retained-cache service, so report it as an interference reference, not the causal effect of network scheduling alone.",
+    "load": "Use the accepted cached-local background implementation with P1024/S16/G32, one real producer on the selected holder or destination GPU, Poisson rho0.5 based on that host's isolated service calibration. Same input/seed and arrival recipe across methods; record actual arrivals and acceptance offsets on each local clock, not fictitious aligned arrivals. Include all offered background requests and complete drain. It is controlled co-located compute, not mobile-device emulation.",
+    "factorization": "Four transfer-isolation cells, four coupled-request cells and four compute-load sensitivities:12 total. No added-RTT sweep, dynamic bandwidth, multi-holder path, load-by-low-rate factorial or outcome-selected extra geometry in this first E4 matrix."
+  },
+  "solo_counterfactuals": {
+    "required": "For every group candidate, actually execute each decoded request alone with identical tokens, P/S/G, action, scheduler, rate and selected hardware but no competing request/transfer and no intentional background load. Reset caches before each solo. This defines interference-free action-matched normalization; for B under no-migration use a solo remote action, not solo repair.",
+    "timing_use": "Solo outcomes are analysis-only labels and cannot alter offered work, scheduling thresholds or methods. They are not online policy features. Keep the solo/group pair in one input block and disclose sequential timing drift.",
+    "order": "Precompute balanced random solo-before-group versus group-before-solo order within each method/block, and randomized order among B solo runs. Freeze before results. Duplicate geometries are still new measured trials, not additional independent statistical blocks.",
+    "transfer_solo": "The isolation module also needs one actual unopposed prefix transfer per I-cell/method/input-block for the five migration methods, including warmup. This is separate from decoded-request solo counts and has its own readiness/bytes/cleanup evidence; no-migration has no such service.",
+    "fairness": "Use action-matched request completion/TTFT/mean-ITL slowdown ratios and the complete per-request vector. Jain's index may be reported on reciprocal completion slowdowns only within a fixed group composition; accompany it with worst slowdown, absolute latencies, makespan and failures. Equal severe slowdown can give Jain=1 and is not useful-service success."
+  },
+  "inputs_repetition_and_order": {
+    "training": "No E4 learned selector or outcome-tuned parameters. The fixed algorithms need no E4 train/calibration split. E1/E2/E3 predictors are not refit or consulted to choose E4 winners.",
+    "service_calibration": {
+      "per_host_warmups": 2,
+      "per_host_measured_cached_local_requests": 10,
+      "purpose": "Set only the fixed rho0.5 background arrival rate; record both service and request wall time. Same fixed procedure as E1. Calibration cannot select cells, scheduler weights or aging thresholds."
+    },
+    "heldout_blocks": [
+      {
+        "block_id": "b00",
+        "family": "E4-test-family-00",
+        "seed": 2026113100
+      },
+      {
+        "block_id": "b01",
+        "family": "E4-test-family-01",
+        "seed": 2026113101
+      },
+      {
+        "block_id": "b02",
+        "family": "E4-test-family-02",
+        "seed": 2026113102
+      },
+      {
+        "block_id": "b03",
+        "family": "E4-test-family-03",
+        "seed": 2026113103
+      },
+      {
+        "block_id": "b04",
+        "family": "E4-test-family-04",
+        "seed": 2026113104
+      },
+      {
+        "block_id": "b05",
+        "family": "E4-test-family-05",
+        "seed": 2026113105
+      },
+      {
+        "block_id": "b06",
+        "family": "E4-test-family-06",
+        "seed": 2026113106
+      },
+      {
+        "block_id": "b07",
+        "family": "E4-test-family-07",
+        "seed": 2026113107
+      }
+    ],
+    "excluded_warmup": {
+      "family": "E4-warmup-family",
+      "seed": 2026113000,
+      "per_cell_per_method": 1
+    },
+    "excluded_smoke": {
+      "family": "E4-smoke-family",
+      "seed": 2026113001
+    },
+    "excluded_calibration": {
+      "family": "E4-calibration-family",
+      "seed": 2026113002
+    },
+    "excluded_profile": {
+      "family": "E4-profile-family",
+      "seed": 2026113003
+    },
+    "order_seed": 2026113200,
+    "input_freeze": "Materialize all tokenizer arrays and content hashes before timings. A/B role suffixes and distinct prefix identities are derived reproducibly within each family; no overlaps with prior stages' train/cal/test/smoke/profile families. Cross-method pairing is exact; cells and multiple requests of a family are dependent observations.",
+    "method_order": "Randomize method and cell orders deterministically, balance early/late positions across eight blocks, and retain the complete frozen order. Do not always run the candidate last or rerun only unfavorable competitors. Warmups are excluded but fully audited.",
+    "background_seed": "Derive from block+cell+load host, not method. Log actual generated offers and local acceptance anchors. Differences caused by execution duration are endogenous and must be reported rather than masked by truncation."
+  },
+  "timing_traffic_and_instrumentation": {
+    "destination_clock": [
+      "offered_s",
+      "accepted_s common group boundary",
+      "per-request executor_entered_s",
+      "each token_delivery_s",
+      "last_token_s",
+      "request_settled_s",
+      "group_batch_done_received_s",
+      "all_jobs_and_background_drained_s"
+    ],
+    "source_clock": "Record source-local RPC receive, ready-compute enqueue/admit/complete, frame-ready/send start/end, transfer terminal and receiver-drain ACK. Use only within-host differences or explicit ping/ACK brackets; never subtract source and destination monotonic clocks.",
+    "request_metrics": [
+      "TTFT including setup",
+      "every ITL/TBT interval",
+      "mean and maximum ITL per request",
+      "token-completion time",
+      "settled time",
+      "request slowdown relative to paired actual solo",
+      "group makespan and generated tokens per measured group second"
+    ],
+    "transfer_metrics": [
+      "first actual send and first GPU-ready layer",
+      "complete GPU-ready prefix and drained settlement time",
+      "time of every committed layer",
+      "bytes/grants during foreground-active and total intervals",
+      "unserved migration if aborted or timed out",
+      "bulk queue age and longest interval without a grant while eligible"
+    ],
+    "queue_metrics": "Per-request RPC queue wait, pacing wait and source/destination ready-compute queue wait/service. Queue service ends after actual CUDA stream completion but remains host-wall service, not kernel time. Record peak and duration-weighted ready queue lengths; distinguish queued work, active work and I/O waits.",
+    "bottleneck_evidence": "For each direction record shared coordinator identity, all stream IDs/classes, cumulative successful send/receive bytes and reservation totals, class backlog and successful-byte deltas in fixed100ms local bins. In separate profiles retain full ordered grants and CUDA traces. A shared cap or high total byte count alone does not establish concurrent contention: require actual coexisting eligible RPC/bulk plus waiting and grant/serialization evidence.",
+    "application_bytes": "Count framing/header/payload/control/RPC/bulk/terminal/drain bytes across every connection, including failures and group setup/settlement. Reconcile successful source sends with destination receives in each direction after complete drain; reserved bytes are not wire bytes. Main data never transports full-vocabulary logits.",
+    "physical_wire_bytes": "Null/unavailable unless a separately reviewed experiment-flow counter or capture measures them, including encapsulation/retransmits with explicit scope. Interface-wide byte counters cannot be silently assigned to this experiment. Application goodput and cap utilization must be named accordingly.",
+    "overhead": "Main instrumentation uses bounded counters and per-request timing records, not full per-chunk history, tensor hashes, NVTX or profiler queries. Historical recent_grants(maxlen256) cannot prove an entire trial's schedule. Separate profiles supply complete traces. Measure counter-only versus profiled overhead on excluded fixtures and never use profiled latency as a main result.",
+    "GPU_utilization": "Report coarse utilization as sampled telemetry with sample cadence and missingness, not as proof of kernel overlap. Nsight CUDA activity/copy events provide mechanism attribution in the declared separate profiles."
+  },
+  "correctness_and_failure_contract": {
+    "every_candidate": "Every group, decoded-request solo and transfer solo executes real work. Every decoded request has a separate exact-route diagnostic and same-shape HF reference with the original strict finite/full-vocabulary/greedy/cache-position tests. Transfer-only jobs require actual source/destination immutable KV content equality in the separate diagnostic and complete readiness/byte/ownership checks in main.",
+    "concurrent_replay": "Replay each request's recorded per-layer cutovers/actions and audit actual source RPC positions. A diagnostic need not reproduce main physical thread interleaving or queue times; do not assert that it does. Both endpoints and all request identities must be bound to the same frozen group plan.",
+    "no_main_audit_perturbation": "No main-path full-vocabulary transport, per-checkpoint GPU-to-CPU cache hashing, extra source witness RPC or synchronous per-kernel profiling solely for evidence. Required operational control and its cost remain real.",
+    "all_offered_denominator": "Preserve every offered request/transfer/background job, including admission failure, timeout, cancellation and late completion. Report group and request failures before any successful-only latency panel. Never erase a slow or failed competing request when reporting foreground benefit.",
+    "timeout": "Predeclare finite group and solo deadlines from the actual new E4 smoke plus resource review before full freeze; no unbounded migration wait or infinite starvation run. Failure to finish is censored/incomplete work, not zero migration time, and forbids a complete paired-comparison claim. An attempt deadline cannot be lengthened selectively after observing a losing method.",
+    "cleanup": "Close all owned control/RPC/bulk sockets, drain or terminate owned threads, release request/prefix references, restore network rules and confirm selected GPUs have no owned stale child. A passed numeric record with failed cleanup is not an accepted group.",
+    "retry": "Infrastructure retries use a new immutable attempt ID, preserve the failed attempt and repeat the declared complete pair/block as needed after diagnosis. No silent method deletion or tolerance change."
+  },
+  "statistics_and_reporting": {
+    "units": "Eight held-out input/seed blocks. Methods are paired; multiple cells, concurrent requests, tokens and retries inside a block are not independent samples.",
+    "bootstrap": {
+      "resamples": 10000,
+      "seed": 2026113300,
+      "confidence_level_descriptive": 0.95,
+      "resampling": "Resample whole blocks jointly across methods/cells, preserving request and solo pairings. Report individual block points and intervals; eight blocks do not provide a power guarantee."
+    },
+    "primary_contrasts": [
+      {
+        "cell": "I02",
+        "comparison": "age_bounded_rpc_first versus fine_fifo",
+        "endpoints": [
+          "A mean ITL and token-completion time",
+          "actual migration completion/solo-transfer slowdown"
+        ],
+        "purpose": "Isolate transport/copy interference without B decode."
+      },
+      {
+        "cell": "C02",
+        "comparison": "age_bounded_rpc_first versus strict_rpc_first and fixed_weighted_3to1",
+        "endpoints": [
+          "A mean ITL",
+          "worst B completion slowdown",
+          "group makespan",
+          "migration progress and bulk starvation intervals"
+        ],
+        "purpose": "Expose foreground protection versus fairness costs under three genuine competing requests."
+      }
+    ],
+    "secondary": "Report all12 cells and all6 methods without selecting favorable regions. Coarse/fine FIFO isolates chunking; C03/L01/L03 separates network scheduling from holder/destination compute contention. Negative gains and natural transfer completion remain in tables.",
+    "tie_rule": "Within5% of the paired primary completion or mean-ITL endpoint is a predeclared practical tie, shown with raw differences and intervals. The threshold is descriptive, not a significance test or forced winner assignment.",
+    "tradeoff_rule": "Do not call a method better solely because A improves. Show the vector of foreground latency, each B slowdown, transfer completion and makespan. A result may be Pareto-incomparable. No-migration reference is excluded from equal-migration-service Pareto rankings.",
+    "tail_scope": "Maximum and any descriptive empirical within-request quantile must show the actual count of63 ITLs and its correlated-request scope. No request p95/p99, tail-probability confidence or steady-state SLO guarantee is reported from these eight blocks.",
+    "goodput_scope": "Report completed generated tokens and successful offered requests per observed finite-group wall time, with failures and unfinished transfer work separate. This is finite-trace throughput, not production SLO goodput. Do not import favorable SLO thresholds after seeing these data.",
+    "needed_for_tail_and_joint_SLO_claims": "A separate preregistered open-loop arrival workload with explicit TTFT/ITL and migration/deadline objectives, all offered denominators, independently chosen thresholds, representative prompt/reuse distribution and enough independent blocks/requests is required. A nominal1000 requests is only a starting plan, not automatic tail precision; sample size must follow desired interval precision and dependence. This belongs to the expanded workload/E7 study and is not fabricated here."
+  },
+  "smoke_plan": {
+    "purpose": "Functional coverage and capacity/deadline calibration only; no fitted scheduler, publication timing or test-family selection.",
+    "group_cells": [
+      "I02",
+      "C02",
+      "L01",
+      "L03"
+    ],
+    "methods": "All six declared methods for each selected cell:24 group smoke attempts, using the excluded smoke family.",
+    "solo_decoded_requests": 78,
+    "solo_transfer_jobs": 5,
+    "total_main_smoke_attempts": 107,
+    "acceptance": [
+      "All four concurrent requests and real rho0.5 load fit the main14B GPU memory budget",
+      "Actual queued RPC and bulk overlap exists in I02/C02; a no-contention run is not labeled as a priority-path test",
+      "Coarse/fine chunks and each scheduler are observed, with fixed-weight deficit and aging override actually triggered at least once on declared fixtures",
+      "Strict RPC priority may yield valid negative/fairness outcomes; do not alter workloads to conceal them",
+      "All requests and transfer jobs pass independent numerical/content, both-endpoint byte and ownership checks",
+      "If no aging trigger occurs, a separately disclosed CPU/component functional fixture may test logic but cannot substitute for GPU mechanism evidence or mark the live path covered"
+    ],
+    "capacity_failure": "Stop and review a versioned pre-execution revision; do not silently reduce concurrency/P, change dtype or use the second GPU."
+  },
+  "separate_profiles": {
+    "cells": [
+      "I02",
+      "C02",
+      "L01",
+      "L03"
+    ],
+    "methods": [
+      "fine_fifo",
+      "fixed_weighted_3to1",
+      "strict_rpc_first",
+      "age_bounded_rpc_first"
+    ],
+    "group_profile_attempts": 16,
+    "endpoint_trace_pairs": 16,
+    "total_endpoint_traces": 32,
+    "inputs": "Excluded profile family, fixed before main outcomes; profile every listed cell/method once, not selected winners.",
+    "required": "Freeze raw Nsight report and SQLite hashes on both actual hosts; reanalyze source and destination CUDA compute/copies, queue admissions and complete chunk-grant/control timeline. Bind traces to model/source/plan/request IDs and actual cap. Preserve valid negative overlap/priority effects instead of forcing positives.",
+    "interpretation": "Profiles attribute mechanisms and test timing-accounting consistency. They are not extra independent statistical repetitions and do not replace uninstrumented main measurements."
+  },
+  "resources_and_counts": {
+    "full_cells": 12,
+    "methods": 6,
+    "heldout_blocks": 8,
+    "excluded_warmup_blocks": 1,
+    "measured_group_attempts": 576,
+    "warmup_group_attempts": 72,
+    "measured_decoded_request_solo_attempts": 1344,
+    "warmup_decoded_request_solo_attempts": 168,
+    "measured_transfer_solo_attempts": 160,
+    "warmup_transfer_solo_attempts": 20,
+    "total_full_main_attempts": 2340,
+    "full_group_decoded_requests_including_warmup": 1512,
+    "full_solo_decoded_requests_including_warmup": 1512,
+    "total_full_decoded_request_executions": 3024,
+    "separate_exact_route_decoded_diagnostics": 3024,
+    "separate_same_shape_HF_references": 3024,
+    "transfer_only_jobs_inside_full_groups": 180,
+    "transfer_solo_jobs": 180,
+    "separate_transfer_content_diagnostics": 360,
+    "separate_profile_group_attempts": 16,
+    "service_calibration_requests_total": 24,
+    "background_arrival_counts": "Data dependent because actual Poisson producer runs through each group; record every offered background request and drain. These are not additional independent test blocks and are not included in the fixed decoded-request count.",
+    "CPU_resources": "Two worker CPU threads per selected GPU, real request/transport threads and orchestration processes; record actual CPU allocation/affinity and utilization. CPU-only preparation generates plans, checks evidence, and computes paired statistics. No third GPU or host is assumed.",
+    "runtime_estimate": null,
+    "estimate_formula": "Before full freeze use actual accepted E4 smoke costs: T_session = setup + sum main(group/solo/transfer) times + sum separate diagnostics and HF reference times + reset/drain times +16 profile attempts + independent-audit time. Report component sample counts/ranges and assumptions; do not extrapolate E0 or E1 single-request seconds as measured E4 cost.",
+    "GPU_hours_formula": "Sum actual selected-GPU ownership seconds across both hosts divided by3600, including initialization, diagnostics, solo references, background drain and profiling. Do not multiply CPU-only post-hoc audit time by two GPUs unless the allocation really remains owned. Kernel-active time is a separate profiled quantity.",
+    "scope_limit": "Two hosts suffice for this shared-link/application-scheduler mechanism study. Independent competing holders or paths need at least three physical hosts and a new topology-controlled protocol."
+  },
+  "implementation_gaps": [
+    {
+      "priority": 1,
+      "gap": "Expose per-trial finite chunk size and the fixed weighted/aging schedulers while retaining one shared budget for all streams in each direction.",
+      "existing": "SharedBandwidthCoordinator implements fifo/rpc_first with default16KiB and records only the last256 grants; this is not the proposed full scheduler/instrumentation API."
+    },
+    {
+      "priority": 1,
+      "gap": "Build source-bound multi-request full runner and a real transfer-only immutable KV job, with per-request accepted/last-token/settled times and all-offered accounting.",
+      "existing": "Old campaign can run concurrent remote+repair but lacks this complete full-stage timing, solo counterfactual and statistical protocol."
+    },
+    {
+      "priority": 1,
+      "gap": "Integrate one common ready-compute queue for all A/B/background work and validate four-request main-model capacity before freezing full.",
+      "existing": "E1 queue/background implementation is available but E1's one foreground request does not establish new multi-request integration correctness."
+    },
+    {
+      "priority": 1,
+      "gap": "Add complete both-direction final byte reconciliation and counter-only queue/bottleneck records; optional physical-wire measurement requires separately reviewed flow attribution.",
+      "existing": "Application socket bytes exist; physical_wire_bytes remains unavailable and historical recent-grant history is truncated."
+    },
+    {
+      "priority": 1,
+      "gap": "Implement separate concurrent exact-route diagnostics, actual transfer content checks, matched solo runs and independent raw coverage/identity/timing/cleanup audit.",
+      "existing": "Reuse accepted mathematical kernels and precision tolerances but do not assume E1 single-request acceptance proves this concurrent path."
+    },
+    {
+      "priority": 2,
+      "gap": "Collect16 source-bound paired Nsight profiles and analyze queue/grant/copy/compute attribution without moving profile overhead into main timings.",
+      "existing": "E0/E1 profiling tools are reusable; their old traces are not E4 evidence."
+    },
+    {
+      "priority": 3,
+      "gap": "Representative open-loop workload, explicit SLOs, statistically justified tails and independent multi-path topology.",
+      "existing": "Explicit future extension; not hidden behind this mechanism-stage completion flag."
+    }
+  ],
+  "completion_criteria": [
+    "Prior stages and new E4 smoke accepted by immutable source/model/physical-cohort evidence; no stage leap.",
+    "Frozen12-cell/6-method/8-block matrix, excluded warmups, all paired actual solos and diagnostic/reference counts reconcile exactly; all offered failures retained.",
+    "At least the preregistered slow isolation/coupled cells demonstrate actual competing RPC/bulk eligibility, waits and service under one measured shared budget. Unsupported claims about an unobserved bottleneck remain withheld.",
+    "All request numerics, actual routes, transfer contents/readiness, both-endpoint bytes and cache/thread/socket/network cleanup gates pass without weakened tolerances.",
+    "Foreground gains or losses, every competing request's slowdown, migration delay/starvation and finite-group resource use are reported together; no favorable-only selection or no-migration service substitution.",
+    "Independent audit verifies all raw hashes plus the32 endpoint traces and rereads profile analyses; valid negative results are retained.",
+    "A reviewer records precisely the accepted mechanism scope and remaining tail/SLO/topology gaps. Neither this JSON nor a passed execution summary automatically sets E4_complete or paper_stage_complete."
+  ]
+}

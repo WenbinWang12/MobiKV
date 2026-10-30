@@ -1,0 +1,26 @@
+--- a/restate/mh_destination.py
++++ b/restate/mh_destination.py
+@@ -63,8 +63,8 @@
+         self.deps = dependencies or production_dependencies()
+         self.queue = engine.compute_queue
+         require(self.queue is not None and self.queue.backend.kind == "cuda_stream_completion", "Actual GPU queue required")
+-        require(engine.layers == 48 and engine.kv_heads == 8 and engine.head_dim == 128
+-                and str(engine.dtype) == "torch.bfloat16", "Frozen main Qwen14B BF16 geometry required")
++        require(engine.layers == 28 and engine.kv_heads == 4 and engine.head_dim == 128
++                and str(engine.dtype) == "torch.bfloat16", "Frozen Qwen2.5-7B BF16 geometry required")
+         self.background = None
+         self.prepared = [OrderedDict() for _ in holders]
+         self.closed = self.active = self.poisoned = False
+--- a/restate/mh_plan.py
++++ b/restate/mh_plan.py
+@@ -18,7 +18,7 @@
+ 
+ from e4_scheduler import policy_config
+ 
+-KV_BYTES_PER_TOKEN = 196608          # Qwen2.5-14B BF16: 48 layers * 8 KV heads * 128 * 2 (K,V) * 2 bytes
++KV_BYTES_PER_TOKEN = 57344           # Qwen2.5-7B BF16: 28 layers * 4 KV heads * 128 * 2 (K,V) * 2 bytes
+ HOLDER_ACTIONS = ("holder", "remote", "repair")
+ ALL_ACTIONS = HOLDER_ACTIONS + ("recompute",)
+ GBPS, SLOW = 1_000_000_000, 250_000_000
+
+# mh_launch: set RESTATE_MODEL to the Qwen2.5-7B snapshot and MANIFEST/REVISION to its manifest.
