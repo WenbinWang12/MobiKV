@@ -1,7 +1,7 @@
 cff-version: 1.2.0
-message: "If you use this software, please cite the paper below."
-title: "ReState"
-abstract: "Research artifact for ReState: multi-holder runtime, planners, experiment pipelines and analysis for contention-aware decisions on remote KV state in edge-cloud LLM serving."
+message: "If you use this software, please cite the MobiKV paper."
+title: "MobiKV"
+abstract: "Research artifact for MobiKV: replica-assisted parallel prefill and decode-first KV replication for multi-turn LLM sessions at the mobile edge."
 authors:
   - family-names: "Wang"
     given-names: "Wenbin"
@@ -11,13 +11,13 @@ authors:
     given-names: "Jiangchuan"
   - family-names: "Hu"
     given-names: "Xiping"
-repository-code: "https://github.com/WenbinWang12/ReState"
+repository-code: "https://github.com/WenbinWang12/MobiKV"
 license: MIT
-version: "1.0.0"
-date-released: "2026-10-30"
+version: "2.0.0"
+date-released: "2026-11-07"
 preferred-citation:
   type: article
-  title: "ReState: Contention-Aware Decisions on Remote KV State for Edge–Cloud LLM Serving"
+  title: "Replicas as Compute: Replica-Assisted Parallel Prefill for Multi-Turn LLM Sessions at the Mobile Edge"
   authors:
     - family-names: "Wang"
       given-names: "Wenbin"

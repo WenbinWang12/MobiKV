@@ -1,115 +1,137 @@
-# ReState
+# MobiKV
 
-Code for the paper **"ReState: Contention-Aware Decisions on Remote KV State for Edge–Cloud LLM Serving"**.
+MobiKV is the research artifact for **Replicas as Compute: Replica-Assisted
+Parallel Prefill for Multi-Turn LLM Sessions at the Mobile Edge**.
 
-When a request's prompt prefix is already cached as KV state on another GPU (a *holder*), the serving system can:
+The repository implements the paper's final system, **MobiKV-DF + RPP**:
 
-- decode on the holder;
-- attend to the remote KV over the network;
-- progressively repair the KV onto the target GPU while decoding;
-- recompute the prefix locally.
+- decouple the user's access edge from the execution edge;
+- keep one secondary KV replica and refresh it during think time;
+- repair missing KV with the measured compute/transfer ratio `rho`;
+- use replica-assisted parallel prefill (RPP) when a replica can compute the
+  front of a long turn while the serving edge computes the back; and
+- give decoding strict priority over background replay (decode-first, or DF).
 
-ReState chooses among these actions per request with a calibrated cost model that prices contention on the target and holder resources.
+The simulator is trace driven. It uses measured GPU prefill/decode costs and
+link goodput, then models foreground prefill, decode, KV transfer, background
+replication, mobility, failures, heterogeneous links, and the RPP pipeline.
+The real-GPU programs measure the costs used by the simulator and replay a
+planned job stream with layer-by-layer RPP and batched decoding.
 
-This repository contains the multi-holder serving runtime, the planners and baseline policies, the experiment pipelines and the analysis scripts behind the paper's experiments.
+## Repository layout
 
-> Status: research code. It was run on three physical hosts, each with one NVIDIA A100/A800 80 GB GPU, using Qwen2.5-14B (and Qwen2.5-7B) in BF16 with TP = 1. Every pipeline writes immutable, hash-bound plans and records, so a run can be resumed and audited.
+| Path | Purpose |
+| --- | --- |
+| `mobikv/simulator.py` | A9 simulator used for the final MobiKV-DF/RPP evaluation. The `--bg_dfb`, `--pp`, `--link_het`, `--helper_fail`, and `--bg_slow` switches implement the final and robustness variants. |
+| `mobikv/measurement/ct_hybrid.py` | Measure full prefill, cached-prefix recompute, and KV transfer/hybrid repair on two hosts. |
+| `mobikv/measurement/ct_pp.py` | Measure one-helper RPP with layer-wise KV streaming. |
+| `mobikv/measurement/ct_pp2.py` | Measure the two-helper chain used for the k=2 theory check. |
+| `mobikv/measurement/sv3_replay.py` | Replay simulator job logs on real GPUs with real decoding, RPP, and decode-first background replay. |
+| `mobikv/preprocess/` | Convert GeoLife, Porto taxi, and WildChat data to the simulator formats and fit `costs.json`. |
+| `mobikv/analysis/` | Analysis scripts for A9 simulation and SV-3 replay output. |
+| `configs/costs_v1.json` | The measured Qwen2.5-7B/14B cost model released with the paper artifact. |
+| `scripts/run_mobikv.py` | Preset launcher for MobiKV, MobiKV-DF, MobiKV+RPP, and MobiKV-DF+RPP. |
+| `examples/` | Small synthetic inputs and a CPU smoke-test command. |
+| `docs/` | Reproduction notes, experiment settings, and the reported final results. |
 
-## What is in the box
+Raw traces and model weights are intentionally not bundled. The preprocessing
+scripts accept local copies of the public GeoLife, Porto, and WildChat data;
+the paper's Mooncake trace is supplied in the same JSONL format.
 
-| Path | Content |
-|---|---|
-| `restate/mh_runner.py`, `mh_launch.py`, `mh_destination.py`, `mh_source_server.py`, `mh_group_execution.py`, `mh_campaign.py` | Multi-holder runtime: one target GPU and two holder GPUs on three distinct hosts. Per request the executed action is **holder decode**, **remote attention** (per-layer RPC to the holder), **progressive repair** (remote attention while the prefix KV migrates layer by layer, then local) or **recompute** |
-| `restate/e0_*`, `e1_*`, `e3_*`, `e4_*`, `campaign_*`, `full_*`, ... | Layered decode engine, KV transport, migration and bandwidth scheduler, numerical validation, used by the runtime above |
-| `restate/mh_plan.py` | Cost-model fitting from calibration, and the policies: `full_controller` (contention-priced selection), `ablate_no_contention`, `least_loaded`, `static_holder`, `static_recompute`, `static_repair`, `threshold_bstar` (INFOCOM B\* rule), plus plan builders for E7/X1/X3–X5 |
-| `restate/supp_plan.py` | Plan builders for the supplementary experiments: heterogeneous holders (HET), load-matched compute throttling (LM), second model (M7B), holder-departure deadlines (DEP, `full_controller_dl`) |
-| `restate/mh_pipeline.py`, `x1_pipeline.py`, `x34_pipeline.py`, `c3t_pipeline.py`, `supp_pipeline.py` | Experiment pipelines: calibration, frozen plan, run, verified cleanup, analysis |
-| `restate/x34_analysis.py`, `x1_analysis.py`, `supp_analysis.py`, `supp_release.py`, `mh_analysis.py`, `supp_predacc.py` | Block-paired analysis (10,000-draw bootstrap, ±5 % labels), action selection, holder-release extraction, cost-model prediction accuracy |
-| `restate/mh_netem.py`, `scoped_netem.py` | Scoped holder-ingress netem used for the RTT sweep; needs `NET_ADMIN` and an iproute2 `tc` |
-| `restate/queued_network_probe.py` | Application-level dual-holder rate probe, used to select rates against B\* |
-| `restate/mps_bench.py` | Prefill benchmark under CUDA MPS SM caps (compute throttling) |
-| `restate/restate_config.py` | **All site-specific settings** (paths, IPs, model identity), read from environment variables |
-| `patches/qwen2.5-7b.patch` | The only code changes needed for Qwen2.5-7B: geometry check and KV bytes per token |
-| `tools/make_model_manifest.py` | Writes the model manifest that every worker verifies at start-up |
+## Installation
 
-## Requirements
-
-- **Hosts**: three hosts on **distinct physical machines**; the launcher checks hostname, boot id and DMI UUID. Each host needs one 80 GB A100/A800 and a shared filesystem mounted at the same path on all three. Password-less SSH from the target host to both holders is required.
-- **Software**: Python 3.10, CUDA 12.4, and the packages in `requirements.txt`; tested with torch 2.6.0, transformers 5.16.1 and huggingface_hub 1.29.0.
-- **Optional**:
-  - iproute2 `tc` with IFB/netem plus `NET_ADMIN`, for the RTT experiment;
-  - CUDA MPS (`nvidia-cuda-mps-control`), for the compute-throttling experiments.
-  - Note: an MPS cap on only *some* GPUs changes kernel selection, and remote attention then fails the runtime's numerical gate. Throttle either all three GPUs or none.
-
-## Setup
+The supported environment is Linux, Python 3.10, CUDA 12.4, PyTorch 2.6,
+and Transformers 5.16.1. For CPU-only simulation and preprocessing:
 
 ```bash
+python3.10 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
-# model snapshot (any HF mirror works)
-hf download Qwen/Qwen2.5-14B --revision 97e1e76335b7017d8f67c08a19d103c0504298c9 --local-dir $MODEL_DIR
-export RESTATE_MODEL=$MODEL_DIR
-export RESTATE_MODEL_MANIFEST_SHA256=$(python tools/make_model_manifest.py $MODEL_DIR Qwen/Qwen2.5-14B 97e1e76335b7017d8f67c08a19d103c0504298c9)
-export RESTATE_PYTHON=$(which python)       # same interpreter path on all hosts
-export RESTATE_TARGET_IP=<target internal IP>
-export RESTATE_HOLDER_IPS=<holder0 IP>,<holder1 IP>
-export RESTATE_ROUTE_PROBE_IP=<any IP routed via the experiment NIC>
-export RESTATE_TC_ROOT=<iproute2 prefix>     # RTT experiment only
 ```
 
-- Put the repository on the shared filesystem and run every pipeline **on the target host**. Holders are addressed as `IP:GPU`, for example `--holders $H0:0 $H1:0`.
-- For **Qwen2.5-7B**: apply `patches/qwen2.5-7b.patch`, and set `RESTATE_MODEL`, `RESTATE_MODEL_ID`, `RESTATE_MODEL_REVISION` and `RESTATE_MODEL_MANIFEST_SHA256` for the 7B snapshot.
+The real-GPU measurement and replay programs additionally require three
+hosts with one A100/A800-class GPU each, password-less SSH between the hosts,
+and a shared model directory. Set `MOBIKV_MODEL` to a local Hugging Face
+snapshot. Do not put model weights in this repository.
 
-## Reproducing the experiments
+## Run the simulator
 
-Each command writes a run directory containing `pipeline-status.jsonl`, the frozen plans, the normalized records and an `analysis/` folder. Pipelines refuse to run if a frozen input changes, and they resume in place after a failure. `--prereg` is any text file you want frozen with the run; it is hash-bound into the results.
+The simulator expects:
 
-| Experiment | Command (run on the target host) |
-|---|---|
-| Base calibration (cost model, B\*) | `python restate/mh_pipeline.py --root RUN/BASE --holders $H0:0 $H1:0 --target-gpu 0 --stages cal` |
-| E7 cells with the `least_loaded` baseline (X1) | `python restate/x1_pipeline.py --root RUN/X1 --holders $H0:0 $H1:0 --prereg PREREG.md` |
-| Rate sweep with and without holder decode (X3/X4), RTT sweep (X5) | `python restate/x34_pipeline.py --root RUN/SWEEP --holders $H0:0 $H1:0 --base-model RUN/BASE/cost-model.json --rates R1 R2 R3 --x5-rate R1 --stages cal,x34,x5 --prereg PREREG.md` |
-| Compute-throttled B\* sweep (C3T) | Start MPS on all three hosts with `set_default_active_thread_percentage P`, then `python restate/c3t_pipeline.py --root RUN/C3T --mps-percentage P --prereg PREREG.md --throttle-selection SEL.json`. `SEL.json` holds at least `{"mps_percentage": P}`; `mps_bench.py` measures prefill slowdown per cap |
-| Heterogeneous holders | `python restate/supp_pipeline.py --experiment HET --mode full --root RUN/HET --holders ... --prereg P.md --base-model RUN/BASE/cost-model.json --rate 1000000000 --loaded-holder 1` |
-| Load-matched throttling | `... --experiment LM --mode full --cost-model RUN/C3T/SWEEP-A/cost-model.json --native-model RUN/BASE/cost-model.json --rates 400000000 2500000000 --mps <ip>=20 <ip>=20 <ip>=20` |
-| Second model | `... --experiment M7B --mode full` (with the 7B patch and model settings) |
-| Holder-departure deadlines | `... --experiment DEP --mode full --base-model RUN/BASE/cost-model.json --rate 2500000000` |
-| Cost-model prediction accuracy | `python restate/supp_predacc.py OUT.json NAME=<stage_dir>=<cost-model.json> ...` |
+1. a JSONL request trace with `timestamp` (ms), `input_length`,
+   `output_length`, and `hash_ids`;
+2. an `.npz` mobility file produced by `geolife_prep.py` or `porto_prep.py`;
+3. a fitted cost model such as `configs/costs_v1.json`.
 
-- `--mode smoke` runs one calibration repetition and a one-block plan. Use it to check a new setup.
-- `x34_analysis.py --root RUN/SWEEP` and `supp_analysis.py --root RUN/X --experiment X --stage X-full` can be re-run offline on finished runs.
+Use the final system preset:
 
-## Notes on interpretation
+```bash
+python scripts/run_mobikv.py \
+  --preset mobikv-df-rpp \
+  --trace /path/to/mooncake.jsonl \
+  --trips /path/to/geolife_test.npz \
+  --costs configs/costs_v1.json \
+  --out runs/default.json \
+  --seed 31 --tpot 1
+```
 
-- **Statistics**: all comparisons are block-paired. The relative improvement is (baseline − method) / baseline on mean completion time, with a 10,000-draw bootstrap interval. Labels are `advantage` / `disadvantage` when both the median and the interval clear ±5 %, and `tied_or_unresolved` otherwise. With 8 blocks per cell the results are descriptive; no tail-latency or coverage claims are made.
-- **Holder-departure (DEP) limitation**: the runtime does not tear a holder down mid-request. Deadlines are enforced at planning time, and violations are measured from the recorded holder-release times.
+The preset expands to the frozen paper configuration:
 
-## Scope of this release
+```text
+--policy mobikv --route_first p2c --cont_min 0 --beta 1
+--pp 1 --pp_cold 1 --pp_ctrl dpp --pp_V 30 --pp_eps 0.05
+--pp_min_rel 0.25 --pp_qmin 1024 --pp_grid 32 --bg_dfb 1
+```
 
-**Included**: everything needed to rerun the multi-holder experiments reported in the paper:
+The other presets are `mobikv`, `mobikv-df`, and `mobikv-rpp`. Any simulator
+option can follow the preset and overrides it. For the A9 robustness checks,
+the simulator exposes `--link_het`, `--link_het_known`, `--helper_fail`, and
+`--bg_slow`; these options are disabled by default.
 
-- calibration;
-- the least_loaded baseline;
-- rate, RTT and holder-action sweeps;
-- compute throttling;
-- heterogeneous holders;
-- a second model;
-- holder-departure deadlines;
-- prediction accuracy.
+Run the bundled CPU smoke test with:
 
-**Not included**:
+```bash
+python examples/smoke_test.py
+```
 
-- the earlier single-holder E1–E4 campaign drivers;
-- raw measurement data (per-trial reports and model weights).
+It creates synthetic traces in a temporary directory, runs MobiKV-DF+RPP,
+and checks that the simulator emits continuation TTFT and TPOT summaries.
 
-Experiment outputs are written to your own run directories.
+## Measure and replay on GPUs
+
+The measurement programs use one process per role. A typical RPP measurement
+has a helper and executor process:
+
+```bash
+# helper host
+python mobikv/measurement/ct_pp.py --role helper --model "$MOBIKV_MODEL" \
+  --peer EXECUTOR_IP --cells K1:8192:18432:0 --out helper.jsonl
+
+# executor host
+python mobikv/measurement/ct_pp.py --role executor --model "$MOBIKV_MODEL" \
+  --peer HELPER_IP --cells K1:8192:18432:0 --out executor.jsonl
+```
+
+See `docs/REPRODUCIBILITY.md` for the three-host layout, MPS settings,
+measurement grids, and the SV-3 replay command. `fit_costs.py` combines the
+measurement JSONL files into the simulator cost-model schema.
+
+## Final reported results
+
+The final evaluation uses fresh seeds 31--35 for the main comparison and
+seeds 21--24 for paired real-GPU replays. MobiKV-DF+RPP has continuation p95
+TTFT ratios of 0.21--0.65 against the six adapted published baselines and a
+0.74 [0.70, 0.78] ratio against MobiKV-DF without RPP. In the paired replay,
+RPP reduces continuation p95 from 4.86 s to 4.05 s (0.83 [0.72, 0.98]) while
+p95 TPOT remains unchanged (0.98 [0.95, 1.03]). The simulator and replay
+limitations, including the selected paper scope and late replicas, are
+documented in `docs/REPRODUCIBILITY.md`.
 
 ## Citation
 
-If you use this code, please cite the paper; see also `CITATION.cff`:
-
 ```bibtex
-@article{wang2026restate,
-  title   = {ReState: Contention-Aware Decisions on Remote KV State for Edge--Cloud LLM Serving},
+@article{wang2026mobikv,
+  title   = {Replicas as Compute: Replica-Assisted Parallel Prefill for Multi-Turn LLM Sessions at the Mobile Edge},
   author  = {Wang, Wenbin and Wang, Runan and Liu, Jiangchuan and Hu, Xiping},
   year    = {2026}
 }
@@ -117,8 +139,4 @@ If you use this code, please cite the paper; see also `CITATION.cff`:
 
 ## License
 
-Released under the MIT License; see `LICENSE`.
-
-## Contact
-
-Please open a GitHub issue for questions or problems with the artifact.
+MIT; see `LICENSE`.

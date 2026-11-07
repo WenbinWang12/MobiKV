@@ -1,6 +1,11 @@
-# Tested with Python 3.10.12, CUDA 12.4
+# CPU simulation and preprocessing
+numpy==2.2.6
+
+# GPU measurement and replay (CUDA 12.4)
 torch==2.6.0
 transformers==5.16.1
 huggingface_hub==1.29.0
-numpy==2.2.6
 safetensors
+
+# Optional WildChat parquet preprocessing
+pyarrow>=18.0

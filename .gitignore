@@ -5,15 +5,17 @@ __pycache__/
 .venv/
 env/
 
-# Experiment outputs and large artifacts (never commit)
-results/
+# Experiment outputs and local data
 runs/
-RUN/
-*.nsys-rep
-*.sqlite
+results/
+data/
+*.jsonl
+*.npz
+*.parquet
 *.safetensors
 *.bin
-models/
+*.sqlite
+*.nsys-rep
 
 # Editors / OS
 .vscode/
