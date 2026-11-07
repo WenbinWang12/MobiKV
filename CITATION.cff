@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite the MobiKV paper."
 title: "MobiKV"
-abstract: "Research artifact for MobiKV: replica-assisted parallel prefill and decode-first KV replication for multi-turn LLM sessions at the mobile edge."
+abstract: "Research artifact for MobiKV: replica-assisted KV cache scheduling for multi-turn LLM serving at the mobile edge."
 authors:
   - family-names: "Wang"
     given-names: "Wenbin"
@@ -17,7 +17,7 @@ version: "2.0.0"
 date-released: "2026-11-07"
 preferred-citation:
   type: article
-  title: "Replicas as Compute: Replica-Assisted Parallel Prefill for Multi-Turn LLM Sessions at the Mobile Edge"
+  title: "MobiKV: Replica-Assisted KV Cache Scheduling for Multi-Turn LLM Serving at the Mobile Edge"
   authors:
     - family-names: "Wang"
       given-names: "Wenbin"

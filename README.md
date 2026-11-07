@@ -1,7 +1,6 @@
 # MobiKV
 
-MobiKV is the research artifact for **Replicas as Compute: Replica-Assisted
-Parallel Prefill for Multi-Turn LLM Sessions at the Mobile Edge**.
+MobiKV is the research artifact for **MobiKV: Replica-Assisted KV Cache Scheduling for Multi-Turn LLM Serving at the Mobile Edge**.
 
 The repository implements the paper's final system, **MobiKV-DF + RPP**:
 
@@ -131,7 +130,7 @@ documented in `docs/REPRODUCIBILITY.md`.
 
 ```bibtex
 @article{wang2026mobikv,
-  title   = {Replicas as Compute: Replica-Assisted Parallel Prefill for Multi-Turn LLM Sessions at the Mobile Edge},
+  title   = {MobiKV: Replica-Assisted KV Cache Scheduling for Multi-Turn LLM Serving at the Mobile Edge},
   author  = {Wang, Wenbin and Wang, Runan and Liu, Jiangchuan and Hu, Xiping},
   year    = {2026}
 }
