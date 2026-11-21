@@ -32,7 +32,7 @@ schema/
   online_replay_summary.schema.json
 ```
 
-The dataset should contain timing, percentile, seed, model, policy, ratio, hardware, and software metadata. It should exclude raw prompts, generated text, tokens, hostnames, IP addresses, credentials, local paths, and model weights. JSONL replay records should be reduced to aggregate rows before upload.
+The dataset should contain timing, percentile, seed, model, policy, ratio, hardware, and software metadata. It should exclude raw prompts, generated text, tokens, hostnames, IP addresses, credentials, local paths, and model weights. Raw replay JSON records should be reduced to aggregate rows before upload.
 
 ## Long-term archive
 
