@@ -1,0 +1,15 @@
+{
+  "repository_commit": "8ca03777dc7c7f89c938eb7bb9af993800fe8f3c",
+  "algorithm": "SHA-256",
+  "files": {
+    "docs/data/aggregate/online_replay_qwen3.csv": "7bf9d81061caf7d8fda04ba7ab47e430bc9e86064fc2ba108633e3ab46f93638",
+    "docs/data/aggregate/rho_sweep_qwen3_aggregate.csv": "1eb00ee233af8dfa8bf1f8855e4ca8bda1e7e0909bbcc843c73d08a00cf7e38e",
+    "docs/data/aggregate/rpp_g25_summary.csv": "6a240871ffd3ce1ca330afdb0d1403a172e125026c1f35c2caaa33f9f223c3d8",
+    "docs/data/aggregate/rpp_mechanism_matrix.csv": "7847e7c9a473865259d321d93579063cc6badac61c24424d46786e689a886c04",
+    "docs/data/aggregate/table1_cross_model.csv": "ba05da147ac8ba559253d9f89c87078e79f2ff1ba990f0f54785620311cb2622",
+    "docs/data/manifests/online_replay_qwen3_manifest.json": "2f3095af090fedf8f7edc509ee1c430d789c5ad75bc0ef2bd173ffae14dd0ecb",
+    "docs/data/model_matrix.json": "45f955d83a1719b93136224e30557d79f1fecf3ae711412e7bb06dc55fd88588",
+    "docs/data/README.md": "76eccc5849c36a031a7372f20b184aba905d9078ddae4de64a5f0b3496cb349f",
+    "docs/data/schema/online_replay_summary.schema.json": "fe5a310317e6a7aaa554149f49b3809d4f7201f1393cbef0f3763638084fc918"
+  }
+}
