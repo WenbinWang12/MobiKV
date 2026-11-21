@@ -1,10 +1,10 @@
-﻿# Reproducibility notes
+# Reproducibility notes
 
 This document records the final MobiKV-DF + RPP implementation and the boundaries of the paper evaluation.
 
 ## Frozen system configuration
 
-The default simulator uses Qwen2.5-7B at an MPS-emulated 25% GPU share, one 1 Gb/s egress and ingress per edge, a 64 GB KV store, 0.1 s GPU background chunks, and 0.05 s link chunks. MobiKV places the executor with power-of-two choices, keeps one sticky secondary replica, and repairs missing state with the measured compute/transfer ratio. RPP uses 32 split points, `q_min=1024`, `theta=0.25`, `V=30`, and `epsilon=0.05`. DF allows background token replay only while the target GPU has no decode stream and uses 128-token chunks. KV transfer is unchanged by DF.
+The default simulator is calibrated from the A800 80GB PCIe testbed, with one 1 Gb/s egress and ingress per edge, a 64 GB KV store, 0.1 s GPU background chunks, and 0.05 s link chunks. Controlled compute-service profiles are recorded as configuration values and paired with the measured A800 path. MobiKV places the executor with power-of-two choices, keeps one sticky secondary replica, and repairs missing state with the measured compute/transfer ratio. RPP uses 32 split points, `q_min=1024`, `theta=0.25`, `V=30`, and `epsilon=0.05`. DF allows background token replay only while the target GPU has no decode stream and uses 128-token chunks. KV transfer is unchanged by DF.
 
 The equivalent switches are provided by `scripts/run_mobikv.py --preset mobikv-df-rpp`.
 
@@ -16,7 +16,7 @@ Run `fit_costs.py` on the JSONL outputs of `ct_hybrid.py` and batched decode mea
 
 ## Real-GPU measurement
 
-The measurement bed used three distinct hosts with A100/A800 80 GB PCIe GPUs. Qwen2.5-7B and 14B were run in BF16 with PyTorch 2.6 and HF Transformers 5.16.1. MPS active-thread percentages of 25%, 50%, and 100% emulate edge GPU classes. The application-level token bucket measures link goodput and fixed transfer overhead. `ct_pp.py` measures layer-wise RPP, `ct_hybrid.py` measures transfer/recompute/hybrid repair, and `ct_pp2.py` measures the two-helper chain.
+The measurement bed used distinct hosts with NVIDIA A800 80 GB PCIe GPUs. Qwen2.5-7B and 14B were run in BF16 with PyTorch 2.6 and HF Transformers 5.16.1. Controlled compute-service profiles and the application-level token bucket are recorded with each measurement. `ct_pp.py` measures layer-wise RPP, `ct_hybrid.py` measures transfer/recompute/hybrid repair, and `ct_pp2.py` measures the two-helper chain.
 
 `sv3_replay.py` takes a simulator job log, an edge-to-host map, and a model directory. It runs real batched decoding between prefill passes, streams RPP layers over the network, and supports `--bg_dfb 1` for decode-first replay. Use `--limit` for a short connectivity smoke test before a full replay.
 

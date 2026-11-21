@@ -1,4 +1,8 @@
 {
+ "model_contexts": {
+  "7B": 32768,
+  "14B": 32768
+ },
  "kv_bytes_per_token": {
   "7B": 57344,
   "14B": 196608

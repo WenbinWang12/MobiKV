@@ -1,4 +1,4 @@
-﻿# Experiment map
+# Experiment map
 
 | Paper component | Public entry point |
 | --- | --- |

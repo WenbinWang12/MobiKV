@@ -11,7 +11,7 @@ with x prefilling the same chunks itself.  Compute shares come from CUDA_MPS_ACT
 """
 import argparse, json, os, queue, socket, threading, time
 import torch
-from ct_hybrid import send_msg, recv_msg, paced_send, load_model, ctx_ids
+from ct_hybrid import send_msg, recv_msg, paced_send, load_model, ctx_ids, model_vocab_size
 from ct_pp import prefix_cache, clone_cache
 
 
@@ -113,7 +113,7 @@ def helper(a):
                     if blob is None or blob.numel() < n: blob = torch.zeros(n, dtype=torch.uint8).pin_memory()
                     send_msg(x, {'ok': 1}); paced_send(x, memoryview(blob.numpy())[:n], 0); continue
                 if req['type'] == 'prepare':
-                    s, e = req['s'], req['e']; ids = ctx_ids(e + 1, dev)
+                    s, e = req['s'], req['e']; ids = ctx_ids(e + 1, dev, vocab_size=model_vocab_size(model))
                     with torch.inference_mode():
                         pref = None; torch.cuda.empty_cache(); _, pref = prefix_cache(model, ids, s)
                     torch.cuda.synchronize(); key = (s, e, ids); send_msg(x, {'ok': 1}); continue
@@ -141,7 +141,7 @@ class X:
     def __init__(self, a):
         self.a = a; self.dev = torch.device('cuda:0'); self.out = open(a.out, 'a'); self.host = socket.gethostname()
         self.share = os.environ.get('CUDA_MPS_ACTIVE_THREAD_PERCENTAGE', '100')
-        self.model = load_model(a.model, self.dev); self.NL, self.kvh, self.hd = geom(self.model)
+        self.model = load_model(a.model, self.dev); self.NL, self.kvh, self.hd = geom(self.model); self.vocab_size = model_vocab_size(self.model)
         self.h = {}
         for name, hp in (('h1', a.h1), ('h2', a.h2)):
             if not hp: continue
@@ -223,7 +223,7 @@ class X:
         return T
 
     def run_cell(self, cell, s, e, cap, reps, grid1, grid2):
-        ids = ctx_ids(e + 1, self.dev); self.probe(f'{cell}-pre')
+        ids = ctx_ids(e + 1, self.dev, vocab_size=self.vocab_size); self.probe(f'{cell}-pre')
         for s_ in self.h.values(): send_msg(s_, {'type': 'prepare', 's': s, 'e': e})
         for s_ in self.h.values(): recv_msg(s_)
         with torch.inference_mode(): _, pref = prefix_cache(self.model, ids, s)

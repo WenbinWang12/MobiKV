@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MobiKV online replay summary row",
+  "type": "object",
+  "required": [
+    "model",
+    "method",
+    "aggregation_unit",
+    "n_requests",
+    "ttft_p50_s",
+    "ttft_p90_s",
+    "ttft_p99_s",
+    "tpot_p50_s",
+    "tpot_p90_s",
+    "tpot_p99_s"
+  ],
+  "properties": {
+    "model": {"type": "string"},
+    "method": {"type": "string"},
+    "aggregation_unit": {"enum": ["edge_shard", "pooled"]},
+    "edge": {"type": "string"},
+    "edge_shard": {"type": ["integer", "string"]},
+    "gpu": {"type": "string"},
+    "service_rate_profile_pct": {"type": "number"},
+    "no_rpp": {"type": "integer"},
+    "n_requests": {"type": "integer", "minimum": 0},
+    "n_ttft": {"type": "integer", "minimum": 0},
+    "n_tpot": {"type": "integer", "minimum": 0},
+    "ttft_mean_s": {"type": ["number", "null"]},
+    "ttft_std_s": {"type": ["number", "null"]},
+    "ttft_p50_s": {"type": ["number", "null"]},
+    "ttft_p90_s": {"type": ["number", "null"]},
+    "ttft_p99_s": {"type": ["number", "null"]},
+    "tpot_mean_s": {"type": ["number", "null"]},
+    "tpot_std_s": {"type": ["number", "null"]},
+    "tpot_p50_s": {"type": ["number", "null"]},
+    "tpot_p90_s": {"type": ["number", "null"]},
+    "tpot_p99_s": {"type": ["number", "null"]},
+    "rpp_fraction": {"type": ["number", "null"]},
+    "boundary_fraction": {"type": ["number", "null"]}
+  }
+}

@@ -16,7 +16,7 @@ Compute share of both GPUs is set from outside with CUDA_MPS_ACTIVE_THREAD_PERCE
 """
 import argparse, json, os, queue, socket, threading, time
 import torch
-from ct_hybrid import send_msg, recv_msg, paced_send, load_model, ctx_ids
+from ct_hybrid import send_msg, recv_msg, paced_send, load_model, ctx_ids, model_vocab_size, model_head_dim
 
 
 def prefix_cache(model, ids, s):
@@ -57,7 +57,7 @@ def helper(a):
                     send_msg(conn, {'ok': 1}); paced_send(conn, memoryview(blob.numpy())[:n], 0); continue
                 if req['type'] == 'prepare':
                     s, e = req['s'], req['e']
-                    ids = ctx_ids(e + 1, dev)
+                    ids = ctx_ids(e + 1, dev, vocab_size=model_vocab_size(model))
                     with torch.inference_mode():
                         pref = None; torch.cuda.empty_cache()
                         _, pref = prefix_cache(model, ids, s)
@@ -102,8 +102,8 @@ class Server:
         self.sock = socket.create_connection((a.peer, a.port)); self.sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
         self.out = open(a.out, 'a'); self.host = socket.gethostname()
         self.share = os.environ.get('CUDA_MPS_ACTIVE_THREAD_PERCENTAGE', '100')
-        self.model = load_model(a.model, self.dev); c = self.model.config
-        self.NL = c.num_hidden_layers; self.kvh = c.num_key_value_heads; self.hd = c.hidden_size // c.num_attention_heads
+        self.model = load_model(a.model, self.dev); c = self.model.config; self.vocab_size = model_vocab_size(self.model)
+        self.NL = c.num_hidden_layers; self.kvh = c.num_key_value_heads; self.hd = model_head_dim(c)
 
     def emit(self, **kw):
         kw.update(host=self.host, share=self.share, ts=time.time(), gpu=torch.cuda.get_device_name(0))
@@ -192,7 +192,7 @@ class Server:
         return split_ms
 
     def run_cell(self, cell, s, e, cap, reps, fracs):
-        ids = ctx_ids(e + 1, self.dev)
+        ids = ctx_ids(e + 1, self.dev, vocab_size=self.vocab_size)
         self.probe(f'{cell}-pre')
         send_msg(self.sock, {'type': 'prepare', 's': s, 'e': e}); recv_msg(self.sock)
         with torch.inference_mode():

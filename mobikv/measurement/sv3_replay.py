@@ -21,11 +21,12 @@ import argparse, collections, json, math, os, queue, socket, struct, threading, 
 import numpy as np
 import torch
 from transformers.cache_utils import Cache, DynamicCache, DynamicLayer
-from ct_hybrid import send_msg, recv_msg, recv_exact, load_model, ctx_ids
+from ct_hybrid import send_msg, recv_msg, recv_exact, load_model, ctx_ids, model_vocab_size
 
 ap = argparse.ArgumentParser()
 ap.add_argument('--joblog', required=True); ap.add_argument('--edges', required=True); ap.add_argument('--hosts', required=True)
 ap.add_argument('--me', type=int, required=True); ap.add_argument('--port', type=int, default=29571)
+ap.add_argument('--same_host', action='store_true', help='use port+edge index for multiple replay workers on one host')
 ap.add_argument('--model', required=True); ap.add_argument('--out', required=True)
 ap.add_argument('--bmax', type=int, default=16); ap.add_argument('--lmax', type=int, default=24576)
 ap.add_argument('--bg_chunk', type=int, default=512); ap.add_argument('--drain', type=float, default=300.0)
@@ -35,6 +36,8 @@ ap.add_argument('--bg_dfb', type=int, default=0); ap.add_argument('--dfb_chunk',
 ap.add_argument('--no_rpp', type=int, default=0)  # A7.1 paired ablation: fronts dropped, backs run as single-edge [s, e)
 a = ap.parse_args()
 EDGES = a.edges.split(';'); HOSTS = a.hosts.split(','); ME = a.me; E = EDGES[ME]; N = len(EDGES)
+def peer_port(index):
+    return a.port + index if a.same_host else a.port
 jl = json.load(open(a.joblog)); T0, T1 = jl['window']; NLs = jl['NL']
 if a.limit > 0:
     T1 = T0 + a.limit; jl['jobs'] = {e: [j for j in v if j[1] < T1] for e, v in jl['jobs'].items()}
@@ -44,7 +47,7 @@ model = load_model(a.model, dev); cfg = model.config
 NL = cfg.num_hidden_layers; KVH = cfg.num_key_value_heads; HD = cfg.hidden_size // cfg.num_attention_heads
 assert NL == NLs
 PER_TOK = KVH * HD * 2 * 2  # bytes of K and V per token per layer (bf16)
-ids = ctx_ids(40000, dev)
+ids = ctx_ids(40000, dev, vocab_size=model_vocab_size(model))
 LAYERS = model.model.layers
 G = dict(in_decode=False)
 
@@ -164,7 +167,7 @@ def sender():
         except OSError:
             send_err[0] += 1
 
-srv = socket.socket(); srv.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1); srv.bind(('0.0.0.0', a.port)); srv.listen(8)
+srv = socket.socket(); srv.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1); srv.bind(('0.0.0.0', peer_port(ME))); srv.listen(8)
 incoming = {}
 def acceptor():
     for _ in range(N - 1):
@@ -174,7 +177,7 @@ for j in range(N):
     if j == ME: continue
     while True:
         try:
-            s_ = socket.create_connection((HOSTS[j], a.port), timeout=5); s_.settimeout(None); break
+            s_ = socket.create_connection((HOSTS[j], peer_port(j)), timeout=5); s_.settimeout(None); break
         except OSError: time.sleep(1)
     s_.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1); send_msg(s_, {'me': ME}); socks_out[j] = s_
 th_acc.join()

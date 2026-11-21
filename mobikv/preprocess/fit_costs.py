@@ -9,7 +9,23 @@ efficiency = median(measured Mb/s / cap) for capped runs; fixed cost from the sm
 import json, sys, statistics as S, collections
 import numpy as np
 
+if len(sys.argv) < 3:
+    raise SystemExit('usage: fit_costs.py MEASUREMENT_DIR OUTPUT_JSON [MODEL=KV_BYTES ...] [--context=MODEL=LIMIT ...]')
 B = sys.argv[1]; OUT = sys.argv[2]
+kv_bytes = {'7B': 57344, '14B': 196608}
+context_limits = {'7B': 32768, '14B': 32768}
+for spec in sys.argv[3:]:
+    if spec.startswith('--context='):
+        context_spec = spec[len('--context='):]
+        if '=' not in context_spec:
+            raise SystemExit(f'bad context specification {spec!r}; use --context=MODEL=LIMIT')
+        model_name, value = context_spec.split('=', 1)
+        context_limits[model_name] = int(value)
+        continue
+    if '=' not in spec:
+        raise SystemExit(f'bad model KV specification {spec!r}; use MODEL=KV_BYTES')
+    model_name, value = spec.split('=', 1)
+    kv_bytes[model_name] = int(value)
 rows = []
 for sub in ['ct_c134', 'ct_c163', 'ct_c147', 'ct_c163x']:
     try:
@@ -31,11 +47,14 @@ def fit(pts):
     return coef
 
 
-out = {'kv_bytes_per_token': {'7B': 57344, '14B': 196608}, 'compute': {}, 'fits': {}}
+out = {'model_contexts': context_limits, 'kv_bytes_per_token': kv_bytes, 'compute': {}, 'fits': {}}
 report = []
 tables = {}
 for (src, tag), rs in sorted(groups.items()):
-    model = tag.split('-')[0][1:]; share = tag.split('-g')[1]
+    model_part, sep, share = tag.rpartition('-g')
+    if not sep:
+        raise ValueError(f'cannot parse model/share from measurement tag {tag!r}')
+    model = model_part[1:] if model_part.startswith('m') else model_part
     full = collections.defaultdict(list); delta = collections.defaultdict(list); dec = collections.defaultdict(list)
     for r in rs:
         if r['kind'] == 'full' and r['ms']: full[r['L']].append(r['ms'])
@@ -80,8 +99,11 @@ for (src, key), tb in tables.items():
                     else: chk[f'{P}:{D}'] = float(np.exp(np.interp(np.log(D), np.log(xs), np.log(ys)))) / ms
         rec['cross_host_delta_ratio_163x_over_134'] = chk
     out['compute'][key] = rec
-# ITL for g=50 was not measured (protocol): use g=25 and g=100 interpolation in 1/share
-for model in ['7B', '14B']:
+# ITL for g=50 was not measured (protocol): use g=25 and g=100 interpolation in 1/share.
+# Derive model names from measured keys so new checkpoints do not silently inherit
+# the original 7B/14B-only behavior.
+models = sorted({key.rsplit('-g', 1)[0] for key in out['compute']})
+for model in models:
     k50 = f'{model}-g50'; k25 = f'{model}-g25'; k100 = f'{model}-g100'
     if k50 in out['compute'] and k25 in out['compute'] and k100 in out['compute']:
         it = {}
@@ -89,6 +111,12 @@ for model in ['7B', '14B']:
             a25 = dict(out['compute'][k25]['itl'][C]); a100 = dict(out['compute'][k100]['itl'].get(C, []))
             it[C] = [[b, 0.5 * (a25[b] + a100[b])] for b in sorted(a25) if b in a100]
         out['compute'][k50]['itl'] = it; out['compute'][k50]['itl_note'] = 'interpolated mean of g25 and g100 (not measured)'
+# Every simulator model must have an explicitly supplied KV size. Legacy defaults
+# remain for existing runs, while new rows fail early instead of using another model's size.
+missing_kv = sorted({key.rsplit('-g', 1)[0] for key in out['compute']} - set(out['kv_bytes_per_token']))
+if missing_kv:
+    raise SystemExit('missing KV bytes/token for model(s): ' + ', '.join(missing_kv) +
+                     '. Re-run with MODEL=KV_BYTES arguments.')
 # transfer
 tr = []
 try:

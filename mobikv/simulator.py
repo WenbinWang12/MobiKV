@@ -37,7 +37,7 @@ def _li(x, xs, ys):
 
 
 class Cost:
-    def __init__(self, cfg, model, share, cap_mbps):
+    def __init__(self, cfg, model, share, cap_mbps, rho_target=None):
         c = cfg['compute'][f'{model}-g{share}']
         self.full_n = [p[0] for p in c['full']]; self.full_ms = [p[1] for p in c['full']]
         self.dS = sorted(int(k) for k in c['delta'])
@@ -48,6 +48,15 @@ class Cost:
         t = cfg['transfer']
         self.rate = cap_mbps * 1e6 / 8.0 * t['eff']
         self.tx_a = t['a_ms'] / 1e3
+        # Optional controlled-ratio mode for the rho sensitivity experiment.
+        # The reference point is an 8k-token cold prefill on the selected model
+        # and MPS share.  The normal cap-based behavior is unchanged when the
+        # option is omitted.
+        if rho_target is not None:
+            ref_compute = self._rc(0, 8192) / 1e3
+            target_transfer = max(float(rho_target) * ref_compute, self.tx_a + 1e-9)
+            payload_time = max(target_transfer - self.tx_a, 1e-9)
+            self.rate = 8192 * self.kappa / payload_time
         self.ideal = False
         self.nc = 1.0; self.nx = 1.0; self.fac = 1.0  # A7: estimate noise (compute, transfer) and link-rate factor
         self.chunk = self.rc(0, 2048)
@@ -236,7 +245,7 @@ def reflect(v, D):
 
 
 # ---------------------------------------------------------------- trace
-def load_sessions(path):
+def load_sessions(path, context_limit=32768):
     rows = [json.loads(l) for l in open(path) if l.strip()]
     key = {}; parent = [-1] * len(rows)
     for i, r in enumerate(rows):
@@ -259,9 +268,9 @@ def load_sessions(path):
             R = 0; q = r['input_length']
         reqs.append(dict(i=i, t=r['timestamp'] / 1e3, inp=r['input_length'], out=max(1, r['output_length']), parent=p,
                          sess=sess[i], turn=turn[i], R=R, q=q))
-    # Sessions whose context would exceed the model's native 32k window (outside the measured cost grid)
+    # Sessions whose context would exceed the selected model's native window (outside the measured cost grid)
     # are scaled down by one session-wide factor, which keeps the turn-to-turn growth structure.
-    CL = 32768
+    CL = int(context_limit)
     bys = collections.defaultdict(list)
     for r in reqs: bys[r['sess']].append(r)
     ver = {}
@@ -285,9 +294,16 @@ def load_sessions(path):
 # ---------------------------------------------------------------- simulator
 class Sim:
     def __init__(self, a, cfg, trips):
-        self.a = a; self.cost = Cost(cfg, a.model, a.share, a.cap)
+        rho_target = None if a.rho_target < 0 else a.rho_target
+        self.a = a; self.cost = Cost(cfg, a.model, a.share, a.cap, rho_target)
+        # Keep the simulator's layer count configurable for online replay.
+        # The historical default (28) remains unchanged for the Qwen2.5
+        # cost-fit campaigns, while Qwen3-8B uses its 36-layer checkpoint.
+        self.NL = int(a.nl)
         self.rng = random.Random(a.seed); self.nprng = np.random.default_rng(a.seed)
-        self.reqs, self.nsess, self.branching = load_sessions(a.trace)
+        model_contexts = cfg.get('model_contexts', {})
+        context_limit = a.context_limit or model_contexts.get(a.model, 32768)
+        self.reqs, self.nsess, self.branching = load_sessions(a.trace, context_limit)
         if a.load != 1.0:
             self.scale_load(a.load)
         self.D = a.side_cells * a.r if a.side_cells else a.side
@@ -1226,6 +1242,8 @@ def main():
     ap.add_argument('--trace', required=True); ap.add_argument('--trips', required=True); ap.add_argument('--costs', required=True)
     ap.add_argument('--out', required=True); ap.add_argument('--policy', default='reactive')
     ap.add_argument('--model', default='7B'); ap.add_argument('--share', type=int, default=25); ap.add_argument('--cap', type=float, default=1000)
+    ap.add_argument('--rho_target', type=float, default=-1, help='set the 8k cold-prefill transfer-to-compute ratio directly; negative keeps --cap behavior')
+    ap.add_argument('--context_limit', type=int, default=0, help='native context limit for the selected model; 0 reads costs.json')
     ap.add_argument('--r', type=float, default=500.0); ap.add_argument('--side', type=float, default=3500.0); ap.add_argument('--side_cells', type=float, default=7.0)
     ap.add_argument('--mem_gb', type=float, default=32.0); ap.add_argument('--load', type=float, default=1.0)
     ap.add_argument('--rtt_base_ms', type=float, default=2.0); ap.add_argument('--rtt_hop_ms', type=float, default=1.0)
@@ -1262,6 +1280,7 @@ def main():
     ap.add_argument('--kv_comp', type=float, default=1.0)    # KV compression ratio on the wire (all transfers)
     ap.add_argument('--time_dec', type=int, default=0)       # wall time of every request's decision
     ap.add_argument('--bg_dfb', type=int, default=0)         # A8: strict decode priority for background replay
+    ap.add_argument('--nl', type=int, default=28, help='decoder layers recorded in joblog RPP timing')
     # A9 (all off by default = A8 behaviour)
     ap.add_argument('--link_het', type=float, default=0.0)       # probability that an edge's network is slow
     ap.add_argument('--link_het_mult', type=float, default=0.35)  # rate multiplier of a slow edge's links
@@ -1280,6 +1299,10 @@ def main():
     s = Sim(a, cfg, trips)
     s.run()
     res = s.summary()
+    # Preserve run identity for seed-level aggregation.  The simulator output
+    # is otherwise intentionally self-contained, so recording the parsed CLI
+    # arguments avoids relying on directory naming conventions later.
+    res['args'] = vars(a)
     json.dump(res, open(a.out, 'w'), indent=1)
     c = res['cont']; h = res['cont_handoff']
     print(f"{a.policy} cont n={c['n']} p95={c['ttft_p95']:.3f} mean={c['ttft_mean']:.3f} | handoff n={h['n']} p95={h['ttft_p95'] if h['n'] else float('nan'):.3f} | util={res['gpu_util_fg']['mean']:.2f} wall={res['wall_s']:.0f}s")

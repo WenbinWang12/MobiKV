@@ -66,9 +66,30 @@ def load_model(path, dev):
     m.eval(); return m
 
 
-def ctx_ids(L, dev, seed=20261103):
+def model_vocab_size(model):
+    cfg = model.config
+    text_cfg = getattr(cfg, 'text_config', None)
+    return int(getattr(cfg, 'vocab_size', getattr(text_cfg, 'vocab_size', 100000)))
+
+
+def model_head_dim(config):
+    """Return the cache head dimension used by the model implementation.
+
+    Gemma-2 exposes an explicit ``head_dim`` that differs from
+    ``hidden_size / num_attention_heads``.
+    """
+    text_cfg = getattr(config, 'text_config', None)
+    for cfg in (config, text_cfg):
+        if cfg is not None and getattr(cfg, 'head_dim', None) is not None:
+            return int(cfg.head_dim)
+    return int(config.hidden_size // config.num_attention_heads)
+
+
+def ctx_ids(L, dev, seed=20261103, vocab_size=100000):
     g = torch.Generator().manual_seed(seed)
-    return torch.randint(1000, 100000, (1, 40000), generator=g)[:, :L].to(dev)
+    hi = max(2, int(vocab_size))
+    lo = min(1000, hi - 1)
+    return torch.randint(lo, hi, (1, int(L)), generator=g).to(dev)
 
 
 def sender(a):
@@ -101,7 +122,7 @@ def sender(a):
                     if L not in kv:
                         kv.clear(); torch.cuda.empty_cache()
                         with torch.inference_mode():
-                            o = model(ctx_ids(L - 1, dev), use_cache=True, logits_to_keep=1)
+                            o = model(ctx_ids(L - 1, dev, vocab_size=model_vocab_size(model)), use_cache=True, logits_to_keep=1)
                         kv[L] = [(ly.keys, ly.values) for ly in o.past_key_values.layers]; o = None
                         torch.cuda.synchronize()
                     send_msg(conn, {'ok': 1}); continue
@@ -141,7 +162,8 @@ class Receiver:
         self.model = load_model(a.model, self.dev) if a.model else None
         if self.model is not None:
             c = self.model.config
-            self.L_layers = c.num_hidden_layers; self.kvh = c.num_key_value_heads; self.hd = c.hidden_size // c.num_attention_heads
+            self.L_layers = c.num_hidden_layers; self.kvh = c.num_key_value_heads; self.hd = model_head_dim(c)
+            self.vocab_size = model_vocab_size(self.model)
 
     def emit(self, **kw):
         kw.update(host=self.host, share=self.share, ts=time.time(), gpu=torch.cuda.get_device_name(0))
@@ -218,7 +240,7 @@ class Receiver:
             return ready_ms, (rc_ms if m > s else 0.0), (res['tx_ms'] if n_tx_tok > 0 else 0.0)
 
     def run_cell(self, cell, L, s, cap, reps, splits):
-        ids = ctx_ids(L, self.dev)
+        ids = ctx_ids(L, self.dev, vocab_size=self.vocab_size)
         self.probe(f'{cell}-pre')
         send_msg(self.sock, {'type': 'prepare', 'L': L}); recv_msg(self.sock)
         maxbytes = (L - 1 - s) * self.L_layers * 2 * self.kvh * self.hd * 2
