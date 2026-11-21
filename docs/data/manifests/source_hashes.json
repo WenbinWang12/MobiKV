@@ -1,5 +1,4 @@
 {
-  "repository_commit": "8ca03777dc7c7f89c938eb7bb9af993800fe8f3c",
   "algorithm": "SHA-256",
   "files": {
     "docs/data/aggregate/online_replay_qwen3.csv": "7bf9d81061caf7d8fda04ba7ab47e430bc9e86064fc2ba108633e3ab46f93638",
@@ -11,5 +10,6 @@
     "docs/data/model_matrix.json": "45f955d83a1719b93136224e30557d79f1fecf3ae711412e7bb06dc55fd88588",
     "docs/data/README.md": "76eccc5849c36a031a7372f20b184aba905d9078ddae4de64a5f0b3496cb349f",
     "docs/data/schema/online_replay_summary.schema.json": "fe5a310317e6a7aaa554149f49b3809d4f7201f1393cbef0f3763638084fc918"
-  }
+  },
+  "source_commit": "369a66cc7bd444bb568eea5fd60c0819869c3fd5"
 }
