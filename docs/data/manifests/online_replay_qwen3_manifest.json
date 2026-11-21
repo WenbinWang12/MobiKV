@@ -13,7 +13,7 @@
   "request_source": "deterministic simulator replay",
   "metrics": {
     "ttft": "seconds",
-    "tpot": "seconds",
+    "tpot": "milliseconds",
     "percentiles": ["P50", "P90", "P99"]
   },
   "privacy": {

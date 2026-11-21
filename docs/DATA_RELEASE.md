@@ -21,7 +21,7 @@ The recommended dataset release is `WenbinWang12/MobiKV-data`. The current GitHu
 ```text
 aggregate/
   table1_cross_model.csv
-  rho_sweep_qwen3.csv
+  rho_sweep_qwen3_aggregate.csv
   rpp_mechanism_matrix.csv
   online_replay_qwen3.csv
 manifests/

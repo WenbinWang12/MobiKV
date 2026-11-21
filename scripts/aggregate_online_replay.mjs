@@ -38,9 +38,9 @@ function sampleStd(values) {
   return Math.sqrt(values.reduce((sum, value) => sum + (value - average) ** 2, 0) / (values.length - 1));
 }
 
-function metrics(rows) {
+function metrics(rows, noRpp = false) {
   const ttft = rows.map((row) => Number(row.ttft_meas)).filter(Number.isFinite);
-  const tpot = rows.map((row) => Number(row.tpot_meas)).filter(Number.isFinite);
+  const tpot = rows.map((row) => Number(row.tpot_meas) * 1000).filter(Number.isFinite);
   const rpp = rows.map((row) => Number(row.rpp)).filter(Number.isFinite);
   const boundary = rows.map((row) => Number(row.boundary)).filter(Number.isFinite);
   return {
@@ -52,12 +52,12 @@ function metrics(rows) {
     ttft_p50_s: quantile(ttft, 0.50),
     ttft_p90_s: quantile(ttft, 0.90),
     ttft_p99_s: quantile(ttft, 0.99),
-    tpot_mean_s: mean(tpot),
-    tpot_std_s: sampleStd(tpot),
-    tpot_p50_s: quantile(tpot, 0.50),
-    tpot_p90_s: quantile(tpot, 0.90),
-    tpot_p99_s: quantile(tpot, 0.99),
-    rpp_fraction: mean(rpp),
+    tpot_mean_ms: mean(tpot),
+    tpot_std_ms: sampleStd(tpot),
+    tpot_p50_ms: quantile(tpot, 0.50),
+    tpot_p90_ms: quantile(tpot, 0.90),
+    tpot_p99_ms: quantile(tpot, 0.99),
+    rpp_fraction: noRpp ? 0 : mean(rpp),
     boundary_fraction: mean(boundary),
   };
 }
@@ -71,7 +71,7 @@ for (const [directory, method] of Object.entries(methods)) {
   const pooled = [];
   for (const file of files) {
     const source = JSON.parse(fs.readFileSync(path.join(directoryPath, file), 'utf8'));
-    const rows = Array.isArray(source.reqs) ? source.reqs : [];
+    const rows = (Array.isArray(source.reqs) ? source.reqs : []).filter((row) => Number(row.eval));
     pooled.push(...rows);
     records.push({
       model: 'Qwen3-8B',
@@ -82,7 +82,9 @@ for (const [directory, method] of Object.entries(methods)) {
       gpu: source.gpu,
       service_rate_profile_pct: Number(source.share),
       no_rpp: Number(source.no_rpp),
-      ...metrics(rows),
+      send_err: Number(source.send_err) || 0,
+      wait_timeouts: Number(source.wait_timeouts) || 0,
+      ...metrics(rows, directory === 'direct'),
     });
   }
   records.push({
@@ -94,15 +96,17 @@ for (const [directory, method] of Object.entries(methods)) {
     gpu: 'NVIDIA A800 80GB PCIe',
     service_rate_profile_pct: 25,
     no_rpp: method === 'MobiKV (direct control)' ? 1 : 0,
-    ...metrics(pooled),
+    send_err: 0,
+    wait_timeouts: 0,
+    ...metrics(pooled, directory === 'direct'),
   });
 }
 
 const fields = [
   'model', 'method', 'aggregation_unit', 'edge', 'edge_shard', 'gpu',
-  'service_rate_profile_pct', 'no_rpp', 'n_requests', 'n_ttft', 'n_tpot',
+  'service_rate_profile_pct', 'no_rpp', 'n_requests', 'n_ttft', 'n_tpot', 'send_err', 'wait_timeouts',
   'ttft_mean_s', 'ttft_std_s', 'ttft_p50_s', 'ttft_p90_s', 'ttft_p99_s',
-  'tpot_mean_s', 'tpot_std_s', 'tpot_p50_s', 'tpot_p90_s', 'tpot_p99_s',
+  'tpot_mean_ms', 'tpot_std_ms', 'tpot_p50_ms', 'tpot_p90_ms', 'tpot_p99_ms',
   'rpp_fraction', 'boundary_fraction',
 ];
 const csvCell = (value) => value == null ? '' : String(value).replaceAll('"', '""');

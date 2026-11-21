@@ -10,9 +10,9 @@
     "ttft_p50_s",
     "ttft_p90_s",
     "ttft_p99_s",
-    "tpot_p50_s",
-    "tpot_p90_s",
-    "tpot_p99_s"
+    "tpot_p50_ms",
+    "tpot_p90_ms",
+    "tpot_p99_ms"
   ],
   "properties": {
     "model": {"type": "string"},
@@ -31,11 +31,13 @@
     "ttft_p50_s": {"type": ["number", "null"]},
     "ttft_p90_s": {"type": ["number", "null"]},
     "ttft_p99_s": {"type": ["number", "null"]},
-    "tpot_mean_s": {"type": ["number", "null"]},
-    "tpot_std_s": {"type": ["number", "null"]},
-    "tpot_p50_s": {"type": ["number", "null"]},
-    "tpot_p90_s": {"type": ["number", "null"]},
-    "tpot_p99_s": {"type": ["number", "null"]},
+    "tpot_mean_ms": {"type": ["number", "null"]},
+    "tpot_std_ms": {"type": ["number", "null"]},
+    "tpot_p50_ms": {"type": ["number", "null"]},
+    "tpot_p90_ms": {"type": ["number", "null"]},
+    "tpot_p99_ms": {"type": ["number", "null"]},
+    "send_err": {"type": "integer", "minimum": 0},
+    "wait_timeouts": {"type": "integer", "minimum": 0},
     "rpp_fraction": {"type": ["number", "null"]},
     "boundary_fraction": {"type": ["number", "null"]}
   }

@@ -9,4 +9,4 @@ This directory contains compact, sanitized summaries that support the paper tabl
 - `manifests/online_replay_qwen3_manifest.json` records hardware, service-rate profile, aggregation, and privacy metadata.
 - `schema/online_replay_summary.schema.json` defines the online replay CSV fields.
 
-The raw replay JSONL and trace records remain outside the repository. They contain request-level operational details and are unnecessary for reproducing the reported aggregates. The online replay summary uses seconds for both TTFT and TPOT, with the unit encoded in each column name.
+The raw replay JSON and trace records remain outside the repository. They contain request-level operational details and are unnecessary for reproducing the reported aggregates. The online replay summary uses seconds for TTFT and milliseconds for TPOT, with the unit encoded in each column name.
