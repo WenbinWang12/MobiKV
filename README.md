@@ -15,7 +15,7 @@ Decode-first background replay gives foreground decoding priority while a replic
 
 ## Snapshot
 
-The Qwen3-8B online-replay aggregate is complete and released under [`docs/data`](docs/data): it covers an NVIDIA A800 80GB PCIe run with three edge shards, 318 pooled RPP requests, and no send errors or wait timeouts. The revised-design simulator aggregate and quiet A800 mechanism rerun remain pending final validation.
+The Qwen3-8B simulator rho sweep is complete and released under [`docs/data`](docs/data): 41 rho points, seven policies, and 20 seeds per point (861 aggregates). The Qwen3-8B online-replay aggregate is also complete: an NVIDIA A800 80GB PCIe run with three edge shards, 318 pooled RPP requests, and no send errors or wait timeouts. The released RPP mechanism matrix is the current three-model, 180-trial subset; the cross-model simulator aggregate and full mechanism grid remain under final validation.
 
 The project page contains the overview, ratio sweep, cross-model table, real-GPU validation, and reproducibility links. Aggregate summaries and their manifests are available under [`docs/data`](docs/data/).
 
