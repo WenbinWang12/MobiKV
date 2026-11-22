@@ -57,7 +57,7 @@
               </div>
 
               <figure class="hero-run-trace" aria-label="MobiKV system overview">
-                <img src="./assets/overview.svg" alt="MobiKV overview showing replica-assisted KV cache scheduling, ratio-guided repair, and parallel prefill." width="1600" height="900" loading="eager" decoding="async" />
+                <img src="./assets/overview.svg" alt="MobiKV overview showing replica-assisted KV cache scheduling, ratio-guided repair, and parallel prefill." width="518" height="223" loading="eager" decoding="async" />
               </figure>
 
               <div class="resource-links" aria-label="MobiKV resources">
@@ -93,7 +93,7 @@
           <section class="section" id="snapshot">
             <div class="section-head"><h2>Snapshot</h2></div>
             <div class="body-copy">
-              <p>MobiKV treats the KV cache as a schedulable distributed state. The scheduler tracks cache holders, transfer backlog, compute queues, and decode pressure, then chooses placement and repair actions using the observed compute-to-transfer ratio <span aria-label="rho sub s k">ρ<sub>sk</sub></span>.</p>
+              <p>MobiKV treats the KV cache as a schedulable distributed state. The scheduler tracks cache holders, transfer backlog, compute queues, and decode pressure, then chooses placement and repair actions using the observed compute-to-transfer ratio <span aria-label="rho sub s k">&#x03C1;<sub>sk</sub></span>.</p>
             </div>
             <div class="table-block">
               <div class="table-label">Reported outcomes</div>
@@ -101,7 +101,7 @@
                 <thead><tr><th>Measurement</th><th>Reported outcome</th></tr></thead>
                 <tbody>
                   <tr><td>Simulator continuation p95 TTFT</td><td>34% lower than the strongest adapted baseline</td></tr>
-                  <tr><td>Replica-assisted prefill</td><td>1.81–1.85× speedup on the A800 testbed for 8–10k-token turns</td></tr>
+                  <tr><td>Replica-assisted prefill</td><td>1.81&#x2013;1.85&#x00D7; speedup on the A800 testbed for 8&#x2013;10k-token turns</td></tr>
                   <tr><td>Online replay continuation p95 TTFT</td><td>24% lower on the replay workload</td></tr>
                   <tr><td>Online replay p95 TPOT</td><td>21% lower while preserving decode-first service</td></tr>
                 </tbody>
@@ -117,13 +117,13 @@
             </div>
             <div class="essay-grid">
               <div><h3>Cache-aware placement</h3><p>Place a continuation on a worker that already holds the required KV state when queueing and link conditions make reuse beneficial.</p></div>
-              <div><h3>Ratio-guided repair</h3><p>Compare transfer and recomputation using <span aria-label="rho sub s k">ρ<sub>sk</sub></span> and retain the lower-cost repair path for each cache segment.</p></div>
+              <div><h3>Ratio-guided repair</h3><p>Compare transfer and recomputation using <span aria-label="rho sub s k">&#x03C1;<sub>sk</sub></span> and retain the lower-cost repair path for each cache segment.</p></div>
               <div><h3>Replica-assisted prefill</h3><p>Split a long prefill across a replica holder and the executor, streaming layer KV as it becomes available.</p></div>
               <div><h3>Decode-first replay</h3><p>Give active decode work priority over background replica refresh so repaired state does not increase token-time variance.</p></div>
             </div>
             <figure class="figure-block">
               <img class="figure-media" src="./assets/rho-sweep.svg" alt="Three-panel sweep of follow-up TTFT across the measured rho sub s k ratio for MobiKV and comparison policies." loading="lazy" decoding="async" />
-              <figcaption class="figure-caption">Figure 2. Follow-up TTFT across <span aria-label="rho sub s k">ρ<sub>sk</sub></span> for Qwen3-8B. Lines show seed means and pale bands show the corresponding standard deviation.</figcaption>
+              <figcaption class="figure-caption">Figure 2. Follow-up TTFT across <span aria-label="rho sub s k">&#x03C1;<sub>sk</sub></span> for Qwen3-8B. Lines show seed means and pale bands show the corresponding standard deviation.</figcaption>
             </figure>
           </section>
 
@@ -172,7 +172,7 @@
       </main>
 
       <footer class="site-footer">
-        <p>MobiKV · research artifact</p>
+        <p>MobiKV &middot; research artifact</p>
         <div class="footer-links"><a href="./assets/MobiKV-paper.pdf">Paper</a><a href="https://github.com/WenbinWang12/MobiKV" target="_blank" rel="noopener">GitHub</a><a href="./data/README.md">Data</a></div>
       </footer>
     </div>
