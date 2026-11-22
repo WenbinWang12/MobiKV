@@ -6,7 +6,7 @@ The artifact separates executable code from data that carries licensing, privacy
 
 - simulator and measurement source code;
 - frozen configuration files and cost-model schemas;
-- paper PDF, appendix, supplement, figures, and aggregation scripts;
+- figure sources and aggregation scripts;
 - aggregate tables, edge-shard percentile summaries, and experiment manifests from the completed online replay campaign; and
 - small synthetic fixtures used by the CPU smoke test.
 

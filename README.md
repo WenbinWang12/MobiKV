@@ -2,7 +2,7 @@
 
 **MobiKV: Replica-Assisted KV Cache Scheduling for Multi-Turn LLM Serving at the Mobile Edge**
 
-[Project page](https://wenbinwang12.github.io/MobiKV/) · [Paper PDF](docs/assets/MobiKV-paper.pdf) · [Appendix](docs/assets/MobiKV-appendix.pdf) · [Supplement](docs/assets/MobiKV-supplement.pdf)
+[Project page](https://wenbinwang12.github.io/MobiKV/) ? [Source code](https://github.com/WenbinWang12/MobiKV)
 
 MobiKV is a research artifact for scheduling multi-turn LLM sessions across mobile-edge servers. The final system, MobiKV-DF + RPP, combines four ideas:
 
@@ -15,9 +15,9 @@ Decode-first background replay gives foreground decoding priority while a replic
 
 ## Snapshot
 
-The current paper snapshot reports a 34% lower continuation p95 TTFT than the best adapted baseline in simulation, 1.81–1.85× RPP speedups on the A800 testbed for 8–10k-token turns, and a three-server replay with 24% lower measured p95 TTFT and 21% lower p95 TPOT than Lyapunov placement.
+The revised-design simulator, A800 mechanism rerun, and online-replay aggregates are being finalized and will be added after validation.
 
-The paper page contains the overview, the ratio sweep, the cross-model table, real-GPU validation, and the reproducibility links. The completed Qwen3 online replay is summarized in [`docs/data/aggregate/online_replay_qwen3.csv`](docs/data/aggregate/online_replay_qwen3.csv), with its manifest and schema in [`docs/data`](docs/data/).
+The project page contains the overview, ratio sweep, cross-model table, real-GPU validation, and reproducibility links. Aggregate summaries and their manifests are available under [`docs/data`](docs/data/).
 
 ## Repository layout
 
@@ -72,17 +72,8 @@ The preset expands to the frozen paper configuration. See [`docs/EXPERIMENTS.md`
 
 ## Data release
 
-The repository releases code, measured cost models, configuration manifests, paper PDFs, and compact aggregate summaries. Public traces remain linked to their original providers. We do not redistribute raw prompts, generated text, model weights, private host paths, or network identifiers. See [`docs/DATA_RELEASE.md`](docs/DATA_RELEASE.md) for the Hugging Face dataset layout and sanitization rules.
+The repository releases code, measured cost models, configuration manifests, figure sources, and compact aggregate summaries. Public traces remain linked to their original providers. We do not redistribute raw prompts, generated text, model weights, private host paths, or network identifiers. See [`docs/DATA_RELEASE.md`](docs/DATA_RELEASE.md) for the Hugging Face dataset layout and sanitization rules.
 
-## Citation
-
-```bibtex
-@article{wang2026mobikv,
-  title   = {MobiKV: Replica-Assisted KV Cache Scheduling for Multi-Turn LLM Serving at the Mobile Edge},
-  author  = {Wang, Wenbin and Wang, Runan and Liu, Jiangchuan and Hu, Xiping},
-  year    = {2026}
-}
-```
 
 ## License
 

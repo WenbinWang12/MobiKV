@@ -1,6 +1,6 @@
 # MobiKV experiment protocol
 
-This document records the public protocol for the MobiKV artifact. It is a compact companion to `docs/REPRODUCIBILITY.md` and the paper supplement.
+This document records the public protocol for the MobiKV artifact. It is a compact companion to `docs/REPRODUCIBILITY.md` and the additional experiment notes.
 
 ## Workload
 
