@@ -1,130 +1,180 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="MobiKV: Replica-Assisted KV Cache Scheduling for Multi-Turn LLM Serving at the Mobile Edge.">
-  <title>MobiKV: Replica-Assisted KV Cache Scheduling</title>
-  <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-  <header class="site-header">
-    <div class="shell nav-inner">
-      <a class="wordmark" href="#top">MobiKV</a>
-      <nav aria-label="Main navigation">
-        <a href="#overview">Overview</a>
-        <a href="#results">Results</a>
-        <a href="#artifacts">Artifacts</a>
-      </nav>
-      <a class="github-link" href="https://github.com/WenbinWang12/MobiKV">GitHub</a>
-    </div>
-  </header>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MobiKV: Replica-Assisted KV Cache Scheduling for Multi-Turn LLM Serving at the Mobile Edge</title>
+    <meta name="description" content="MobiKV is a replica-assisted KV cache scheduling framework for multi-turn LLM serving at the mobile edge." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css?v=15" />
+  </head>
+  <body>
+    <div class="site-shell">
+      <header class="site-header">
+        <div class="logo"><a class="logo-link" href="#top"><strong>MobiKV</strong></a></div>
+        <nav class="site-nav" aria-label="Main navigation">
+          <a href="#tasks">Overview</a>
+          <a href="#quest">Analysis</a>
+          <a href="#data">Reproduction</a>
+        </nav>
+      </header>
 
-  <main id="top" class="shell page">
-    <section class="paper-header">
-      <p class="date-line">Research artifact · 2026</p>
-      <h1>MobiKV: Replica-Assisted KV Cache Scheduling for Multi-Turn LLM Serving at the Mobile Edge</h1>
-      <p class="authors"><strong>Wenbin Wang</strong><sup>1</sup> · <strong>Runan Wang</strong><sup>2</sup> · <strong>Jiangchuan Liu</strong><sup>3</sup> · <strong>Xiping Hu</strong><sup>4</sup></p>
-      <p class="affiliations"><sup>1</sup>Independent Research · <sup>2</sup>Shenzhen MSU-BIT University · <sup>3</sup>Simon Fraser University · <sup>4</sup>Shenzhen University</p>
-      <div class="paper-links">
-        <a class="button primary" href="assets/MobiKV-paper.pdf">Paper PDF</a>
-        <a class="button" href="https://github.com/WenbinWang12/MobiKV">Code and release</a>
-        <a class="button" href="data/README.md">Data release</a>
-      </div>
-      <p class="abstract">MobiKV schedules multi-turn LLM sessions across mobile-edge servers by combining cache-aware placement, replica repair, and replica-assisted parallel prefill. A measured transfer-to-compute ratio determines when a secondary KV replica should become a compute helper.</p>
-      <figure class="hero-figure">
-        <img src="assets/overview.svg" alt="MobiKV system overview showing cache holders, an executor, a replica helper, and layer-wise KV streaming.">
-        <figcaption>System overview. MobiKV connects cache placement, repair, and parallel prefill in one scheduling loop.</figcaption>
-      </figure>
-    </section>
+      <main id="top" class="article-shell">
+        <nav class="toc-sidebar" aria-label="Table of contents">
+          <div class="toc-label">Contents</div>
+          <ol class="toc-list">
+            <li><a href="#snapshot">Snapshot</a></li>
+            <li><a href="#tasks">Overview</a></li>
+            <li><a href="#quest">Analysis</a></li>
+            <li><a href="#data">Reproduction</a></li>
+          </ol>
+        </nav>
 
-    <section class="contents" aria-label="Contents">
-      <p class="section-kicker">Contents</p>
-      <div class="contents-grid">
-        <a href="#snapshot"><span>01</span>Snapshot</a>
-        <a href="#overview"><span>02</span>Overview</a>
-        <a href="#results"><span>03</span>Results</a>
-        <a href="#artifacts"><span>04</span>Artifacts</a>
-      </div>
-    </section>
+        <article class="article">
+          <section class="cover">
+            <div class="article-head">
+              <div class="article-meta-row"><time datetime="2026-11-22">November 22, 2026</time></div>
+              <h1>
+                <span class="title-line"><span class="brand">MobiKV</span>: Replica-Assisted KV Cache Scheduling</span>
+                <span class="title-line">for Multi-Turn LLM Serving at the Mobile Edge</span>
+              </h1>
 
-    <section class="section" id="snapshot">
-      <p class="section-kicker">Snapshot</p>
-      <h2>Cache availability and long-prefill cost are one scheduling problem.</h2>
-      <p class="section-lead">MobiKV separates where a turn executes from where its conversation state is stored. The ratio ρ of transfer time to compute time tells the controller when a replica can shorten the critical path.</p>
-      <div class="metric-table" role="list">
-        <div role="listitem"><strong>34%</strong><span>lower continuation p95 TTFT than the best adapted baseline in simulation</span></div>
-        <div role="listitem"><strong>1.81–1.85×</strong><span>real-GPU RPP prefill speedup for 8–10k-token turns</span></div>
-        <div role="listitem"><strong>24%</strong><span>lower measured continuation p95 TTFT in the three-server replay</span></div>
-        <div role="listitem"><strong>21%</strong><span>lower measured p95 TPOT in the same replay</span></div>
-      </div>
-    </section>
+              <div class="author-block" aria-label="Authors">
+                <p class="author-row">
+                  <span>Wenbin Wang<sup>1</sup></span>
+                  <span>Runan Wang<sup>2</sup></span>
+                  <span>Jiangchuan Liu<sup>3</sup></span>
+                  <span>Xiping Hu<sup>4</sup></span>
+                </p>
+                <p class="affiliation-row">
+                  <span><sup>1</sup>Independent Research</span>
+                  <span><sup>2</sup>Shenzhen MSU-BIT University</span>
+                  <span><sup>3</sup>Simon Fraser University</span>
+                  <span><sup>4</sup>Shenzhen University</span>
+                </p>
+              </div>
 
-    <section class="section" id="overview">
-      <p class="section-kicker">Overview</p>
-      <h2>Replicas become compute when a long turn arrives.</h2>
-      <p class="section-lead">The controller keeps one secondary KV copy during think time, predicts ready times at eligible executors, repairs missing state according to ρ, and launches replica-assisted parallel prefill when the measured operating point supports it.</p>
-      <div class="method-list">
-        <article><span>01</span><div><h3>Choose the executor</h3><p>Combine GPU queues, link backlogs, cache holders, and TPOT stall debt in each scheduling decision.</p></div></article>
-        <article><span>02</span><div><h3>Repair the missing KV</h3><p>Use transfer, recomputation, or hybrid repair according to the current compute–transfer ratio.</p></div></article>
-        <article><span>03</span><div><h3>Use the replica as a helper</h3><p>Split a long prefill across the replica holder and executor, streaming each layer's KV as soon as it is ready.</p></div></article>
-        <article><span>04</span><div><h3>Protect decoding</h3><p>Decode-first background replay gives ongoing output tokens priority over replica refresh work.</p></div></article>
-      </div>
-    </section>
+              <figure class="hero-run-trace" aria-label="MobiKV system overview">
+                <img src="./assets/overview.svg" alt="MobiKV overview showing replica-assisted KV cache scheduling, ratio-guided repair, and parallel prefill." width="1600" height="900" loading="eager" decoding="async" />
+              </figure>
 
-    <section class="section" id="results">
-      <p class="section-kicker">Results</p>
-      <h2>The measured ratio predicts where RPP helps.</h2>
-      <p class="section-lead">The sweep varies ρ on the same A800-calibrated workload. Lines show seed means and pale bands show mean ± sample standard deviation across 20 seeds.</p>
-      <figure class="wide-figure">
-        <img src="assets/rho-sweep.svg" alt="Three-panel rho sweep showing P50, P90, and P99 follow-up TTFT for seven scheduling policies with pale standard-deviation bands.">
-        <figcaption>Follow-up TTFT across ρ for Qwen3-8B.</figcaption>
-      </figure>
-      <div class="figure-grid">
-        <figure>
-          <img src="assets/tradeoff.svg" alt="Bar charts comparing follow-up p95 TTFT and p95 TPOT across MobiKV and adapted baselines.">
-          <figcaption>Default-scenario tail latency and TPOT.</figcaption>
-        </figure>
-        <figure>
-          <img src="assets/bounds.svg" alt="Measured RPP speedups compared with analytical bounds.">
-          <figcaption>RPP measurements against analytical bounds.</figcaption>
-        </figure>
-      </div>
-    </section>
+              <div class="resource-links" aria-label="MobiKV resources">
+                <a class="resource-link" href="./assets/MobiKV-paper.pdf">
+                  <span class="resource-icon resource-icon-paper" aria-hidden="true"><svg viewBox="0 0 24 24" role="img" focusable="false"><path d="M6 2.5h8.2L19 7.3v14.2H6V2.5Zm8 1.9v3.2h3.2L14 4.4ZM8.1 9.8h8.8V8.4H8.1v1.4Zm0 3.3h8.8v-1.4H8.1v1.4Zm0 3.3h6.4V15H8.1v1.4Z" /></svg></span>
+                  <strong>Paper</strong><small>PDF</small>
+                </a>
+                <a class="resource-link" href="https://github.com/WenbinWang12/MobiKV" target="_blank" rel="noopener">
+                  <span class="resource-icon" aria-hidden="true"><svg viewBox="0 0 24 24" role="img" focusable="false"><path d="M12 2.3a9.7 9.7 0 0 0-3.07 18.9c.49.09.67-.21.67-.47v-1.66c-2.72.59-3.29-1.16-3.29-1.16-.44-1.1-1.08-1.4-1.08-1.4-.89-.61.07-.6.07-.6.98.07 1.49 1.01 1.49 1.01.87 1.49 2.3 1.06 2.86.81.09-.63.34-1.06.62-1.3-2.17-.25-4.45-1.08-4.45-4.81 0-1.06.38-1.93 1.01-2.61-.1-.25-.44-1.31.1-2.58 0 0 .82-.26 2.67.99a9.2 9.2 0 0 1 4.86 0c1.85-1.25 2.67-.99 2.67-.99.54 1.27.2 2.33.1 2.58.63.68 1.01 1.55 1.01 2.61 0 3.74-2.28 4.56-4.46 4.8.35.3.66.88.66 1.78v2.64c0 .26.18.57.68.47A9.7 9.7 0 0 0 12 2.3Z" /></svg></span>
+                  <strong>GitHub</strong><small>Code</small>
+                </a>
+                <a class="resource-link" href="./data/README.md">
+                  <span class="resource-icon" aria-hidden="true"><svg viewBox="0 0 24 24" role="img" focusable="false"><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v16.5A3.5 3.5 0 0 0 16.5 15H4V4.5Zm0 12.1h12.5c1.06 0 2.03.38 2.78 1.02V4H6.5C5.67 4 5 4.67 5 5.5v10.1h11.5V17H4v-.4Z" /></svg></span>
+                  <strong>Data</strong><small>Release</small>
+                </a>
+                <a class="resource-link" href="./assets/MobiKV-appendix.pdf">
+                  <span class="resource-icon resource-icon-paper" aria-hidden="true"><svg viewBox="0 0 24 24" role="img" focusable="false"><path d="M6 2.5h8.2L19 7.3v14.2H6V2.5Zm8 1.9v3.2h3.2L14 4.4ZM8.1 9.8h8.8V8.4H8.1v1.4Zm0 3.3h8.8v-1.4H8.1v1.4Zm0 3.3h6.4V15H8.1v1.4Z" /></svg></span>
+                  <strong>Appendix</strong><small>PDF</small>
+                </a>
+                <a class="resource-link" href="./assets/MobiKV-supplement.pdf">
+                  <span class="resource-icon resource-icon-paper" aria-hidden="true"><svg viewBox="0 0 24 24" role="img" focusable="false"><path d="M6 2.5h8.2L19 7.3v14.2H6V2.5Zm8 1.9v3.2h3.2L14 4.4ZM8.1 9.8h8.8V8.4H8.1v1.4Zm0 3.3h8.8v-1.4H8.1v1.4Zm0 3.3h6.4V15H8.1v1.4Z" /></svg></span>
+                  <strong>Supplement</strong><small>PDF</small>
+                </a>
+              </div>
+            </div>
 
-    <section class="section" id="artifacts">
-      <p class="section-kicker">Artifacts</p>
-      <h2>Reproducible code, measurements, and compact data releases.</h2>
-      <div class="artifact-grid">
-        <a href="https://github.com/WenbinWang12/MobiKV/blob/main/docs/REPRODUCIBILITY.md"><strong>Reproducibility notes</strong><span>Frozen settings, inputs, and measurement protocol</span></a>
-        <a href="https://github.com/WenbinWang12/MobiKV/blob/main/docs/EXPERIMENTS.md"><strong>Experiment map</strong><span>Paper claims mapped to public entry points</span></a>
-        <a href="data/model_matrix.json"><strong>Model matrix</strong><span>Cross-model configurations and reporting fields</span></a>
-        <a href="data/aggregate/online_replay_qwen3.csv"><strong>Online replay summary</strong><span>Sanitized Qwen3 edge-shard and pooled metrics</span></a>
-        <a href="assets/MobiKV-appendix.pdf"><strong>Appendix</strong><span>Extended derivations and experiment details</span></a>
-        <a href="assets/MobiKV-supplement.pdf"><strong>Supplement</strong><span>Additional figures and supporting results</span></a>
-      </div>
-      <div class="quick-start">
-        <p class="section-kicker">Quick start</p>
-        <pre><code>python3.10 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-python examples/smoke_test.py</code></pre>
-      </div>
-    </section>
+            <div class="lede">
+              <p><strong>MobiKV is a replica-assisted KV cache scheduling framework for multi-turn LLM serving at the mobile edge.</strong></p>
+              <p>It combines cache-aware placement, ratio-guided KV repair, and replica-assisted parallel prefill so a secondary KV copy can become a compute helper when the measured operating point supports it.</p>
+            </div>
+          </section>
 
-    <section class="section citation-section">
-      <p class="section-kicker">Citation</p>
-      <h2>If you use MobiKV, please cite the paper.</h2>
-      <pre class="citation"><code>@article{wang2026mobikv,
+          <section class="section" id="snapshot">
+            <div class="section-head"><h2>Snapshot</h2></div>
+            <div class="body-copy">
+              <p>MobiKV treats the KV cache as a schedulable distributed state. The scheduler tracks cache holders, transfer backlog, compute queues, and decode pressure, then chooses placement and repair actions using the observed compute-to-transfer ratio <span aria-label="rho sub s k">ρ<sub>sk</sub></span>.</p>
+            </div>
+            <div class="table-block">
+              <div class="table-label">Reported outcomes</div>
+              <table class="content-table">
+                <thead><tr><th>Measurement</th><th>Reported outcome</th></tr></thead>
+                <tbody>
+                  <tr><td>Simulator continuation p95 TTFT</td><td>34% lower than the strongest adapted baseline</td></tr>
+                  <tr><td>Replica-assisted prefill</td><td>1.81–1.85× speedup on the A800 testbed for 8–10k-token turns</td></tr>
+                  <tr><td>Online replay continuation p95 TTFT</td><td>24% lower on the replay workload</td></tr>
+                  <tr><td>Online replay p95 TPOT</td><td>21% lower while preserving decode-first service</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="section" id="tasks">
+            <div class="section-head"><h2>Overview</h2></div>
+            <div class="body-copy">
+              <p>Multi-turn requests often revisit a prefix whose KV cache is already present somewhere in the edge cluster. MobiKV keeps that state useful across turns and selects a repair path when the next request lands on a different worker.</p>
+              <p>The design is organized around four operations that share one scheduler state and one measurable ratio. This makes the policy interpretable across homogeneous and heterogeneous replicas.</p>
+            </div>
+            <div class="essay-grid">
+              <div><h3>Cache-aware placement</h3><p>Place a continuation on a worker that already holds the required KV state when queueing and link conditions make reuse beneficial.</p></div>
+              <div><h3>Ratio-guided repair</h3><p>Compare transfer and recomputation using <span aria-label="rho sub s k">ρ<sub>sk</sub></span> and retain the lower-cost repair path for each cache segment.</p></div>
+              <div><h3>Replica-assisted prefill</h3><p>Split a long prefill across a replica holder and the executor, streaming layer KV as it becomes available.</p></div>
+              <div><h3>Decode-first replay</h3><p>Give active decode work priority over background replica refresh so repaired state does not increase token-time variance.</p></div>
+            </div>
+            <figure class="figure-block">
+              <img class="figure-media" src="./assets/rho-sweep.svg" alt="Three-panel sweep of follow-up TTFT across the measured rho sub s k ratio for MobiKV and comparison policies." loading="lazy" decoding="async" />
+              <figcaption class="figure-caption">Figure 2. Follow-up TTFT across <span aria-label="rho sub s k">ρ<sub>sk</sub></span> for Qwen3-8B. Lines show seed means and pale bands show the corresponding standard deviation.</figcaption>
+            </figure>
+          </section>
+
+          <section class="section" id="quest">
+            <div class="section-head"><h2>Analysis</h2></div>
+            <div class="body-copy">
+              <p>The ratio sweep exposes where replica-assisted prefill helps and where transfer dominates. The same operating-point view explains the tail-latency changes in the simulator and the online replay validation.</p>
+              <p>We report median and tail behavior separately because a policy can improve typical follow-up time while still creating queueing spikes. The A800 measurements therefore include p50, p90, and p99 latency summaries together with TPOT.</p>
+            </div>
+            <figure class="figure-block">
+              <img class="figure-media" src="./assets/tradeoff.svg" alt="Comparison of follow-up p95 TTFT and p95 TPOT across MobiKV and adapted baselines." loading="lazy" decoding="async" />
+              <figcaption class="figure-caption">Figure 3. Tail TTFT and TPOT in the default replay scenario.</figcaption>
+            </figure>
+            <figure class="figure-block">
+              <img class="figure-media" src="./assets/bounds.svg" alt="Measured replica-assisted prefill speedups compared with analytical bounds." loading="lazy" decoding="async" />
+              <figcaption class="figure-caption">Figure 4. RPP measurements compared with the analytical speedup bounds.</figcaption>
+            </figure>
+          </section>
+
+          <section class="section" id="data">
+            <div class="section-head"><h2>Reproduction</h2></div>
+            <div class="body-copy">
+              <p>The public repository contains the simulator, replay drivers, configuration files, figure sources, and compact aggregate releases used by the project page. The data release records the workload settings, seed aggregation, and reporting units needed to reproduce the headline plots.</p>
+              <p>Start with the <a href="https://github.com/WenbinWang12/MobiKV/blob/main/docs/REPRODUCIBILITY.md" target="_blank" rel="noopener">reproducibility notes</a>, then use the <a href="https://github.com/WenbinWang12/MobiKV/blob/main/docs/EXPERIMENTS.md" target="_blank" rel="noopener">experiment map</a> to connect each paper claim to its entry point.</p>
+            </div>
+            <div class="essay-grid">
+              <div><h3>Code and configurations</h3><p><a href="https://github.com/WenbinWang12/MobiKV" target="_blank" rel="noopener">GitHub</a> contains the implementation and configuration templates for the simulator and online replay.</p></div>
+              <div><h3>Aggregate data</h3><p>The <a href="./data/README.md">data release</a> contains sanitized summaries and the field definitions used in the tables and figures.</p></div>
+              <div><h3>Extended paper material</h3><p>Use the <a href="./assets/MobiKV-appendix.pdf">appendix</a> for derivations and the <a href="./assets/MobiKV-supplement.pdf">supplement</a> for additional results.</p></div>
+              <div><h3>Paper</h3><p>Read the current <a href="./assets/MobiKV-paper.pdf">paper PDF</a> for the complete method and evaluation.</p></div>
+            </div>
+          </section>
+
+          <section class="section citation-section" id="citation">
+            <div class="section-head"><h2>Citation</h2></div>
+            <div class="citation-card">
+              <p>If you use MobiKV, please cite the paper.</p>
+              <pre class="citation-code"><code>@article{wang2026mobikv,
   title   = {MobiKV: Replica-Assisted KV Cache Scheduling for Multi-Turn LLM Serving at the Mobile Edge},
   author  = {Wang, Wenbin and Wang, Runan and Liu, Jiangchuan and Hu, Xiping},
   year    = {2026}
 }</code></pre>
-    </section>
-  </main>
+            </div>
+          </section>
+        </article>
+      </main>
 
-  <footer class="site-footer">
-    <div class="shell"><span>MobiKV · research artifact</span><span><a href="assets/MobiKV-paper.pdf">Paper</a> · <a href="https://github.com/WenbinWang12/MobiKV">GitHub</a></span></div>
-  </footer>
-</body>
+      <footer class="site-footer">
+        <p>MobiKV · research artifact</p>
+        <div class="footer-links"><a href="./assets/MobiKV-paper.pdf">Paper</a><a href="https://github.com/WenbinWang12/MobiKV" target="_blank" rel="noopener">GitHub</a><a href="./data/README.md">Data</a></div>
+      </footer>
+    </div>
+  </body>
 </html>
