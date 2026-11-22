@@ -33,7 +33,7 @@
       </div>
       <p class="abstract">MobiKV schedules multi-turn LLM sessions across mobile-edge servers by combining cache-aware placement, replica repair, and replica-assisted parallel prefill. A measured transfer-to-compute ratio determines when a secondary KV replica should become a compute helper.</p>
       <figure class="hero-figure">
-        <img src="assets/overview.png" alt="MobiKV system overview showing cache holders, an executor, a replica helper, and layer-wise KV streaming.">
+        <img src="assets/overview.svg" alt="MobiKV system overview showing cache holders, an executor, a replica helper, and layer-wise KV streaming.">
         <figcaption>System overview. MobiKV connects cache placement, repair, and parallel prefill in one scheduling loop.</figcaption>
       </figure>
     </section>
@@ -77,16 +77,16 @@
       <h2>The measured ratio predicts where RPP helps.</h2>
       <p class="section-lead">The sweep varies ρ on the same A800-calibrated workload. Lines show seed means and pale bands show mean ± sample standard deviation across 20 seeds.</p>
       <figure class="wide-figure">
-        <img src="assets/rho-sweep.png" alt="Three-panel rho sweep showing P50, P90, and P99 follow-up TTFT for seven scheduling policies with pale standard-deviation bands.">
+        <img src="assets/rho-sweep.svg" alt="Three-panel rho sweep showing P50, P90, and P99 follow-up TTFT for seven scheduling policies with pale standard-deviation bands.">
         <figcaption>Follow-up TTFT across ρ for Qwen3-8B.</figcaption>
       </figure>
       <div class="figure-grid">
         <figure>
-          <img src="assets/tradeoff.png" alt="Bar charts comparing follow-up p95 TTFT and p95 TPOT across MobiKV and adapted baselines.">
+          <img src="assets/tradeoff.svg" alt="Bar charts comparing follow-up p95 TTFT and p95 TPOT across MobiKV and adapted baselines.">
           <figcaption>Default-scenario tail latency and TPOT.</figcaption>
         </figure>
         <figure>
-          <img src="assets/bounds.png" alt="Measured RPP speedups compared with analytical bounds.">
+          <img src="assets/bounds.svg" alt="Measured RPP speedups compared with analytical bounds.">
           <figcaption>RPP measurements against analytical bounds.</figcaption>
         </figure>
       </div>
