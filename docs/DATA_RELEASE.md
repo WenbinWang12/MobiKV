@@ -12,7 +12,7 @@ The artifact separates executable code from data that carries licensing, privacy
 
 ## Link to original providers
 
-GeoLife, Porto taxi, WildChat, and the Mooncake conversation trace keep their original provenance and terms. The repository provides preprocessing scripts and the expected schemas. A user downloads each source from its original provider and records a local source hash in the manifest.
+GeoLife, Porto taxi, WildChat, and the Mooncake conversation trace keep their original provenance and terms. Source links, licenses, and the references to cite are listed under "Third-party data and models" in the repository README. The repository provides preprocessing scripts and the expected schemas. A user downloads each source from its original provider and records a local source hash in the manifest.
 
 ## Hugging Face dataset
 

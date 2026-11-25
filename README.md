@@ -2,7 +2,9 @@
 
 **MobiKV: Replica-Assisted KV Cache Scheduling for Multi-Turn LLM Serving at the Mobile Edge**
 
-[Project page](https://wenbinwang12.github.io/MobiKV/) ? [Source code](https://github.com/WenbinWang12/MobiKV)
+[![Website](https://img.shields.io/badge/Website-MobiKV-blue)](https://wenbinwang12.github.io/MobiKV/)
+![arXiv](https://img.shields.io/badge/arXiv-coming%20soon-b31b1b)
+[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
 MobiKV is a research artifact for scheduling multi-turn LLM sessions across mobile-edge servers. The final system, MobiKV-DF + RPP, combines four ideas:
 
@@ -72,7 +74,53 @@ The preset expands to the frozen paper configuration. See [`docs/EXPERIMENTS.md`
 
 ## Data release
 
-The repository releases code, measured cost models, configuration manifests, figure sources, and compact aggregate summaries. Public traces remain linked to their original providers. We do not redistribute raw prompts, generated text, model weights, private host paths, or network identifiers. See [`docs/DATA_RELEASE.md`](docs/DATA_RELEASE.md) for the Hugging Face dataset layout and sanitization rules.
+The repository releases code, measured cost models, configuration manifests, figure sources, and compact aggregate summaries of our own experiments. MobiKV has no private dataset: every input trace is a public dataset that stays with its original provider. We do not redistribute raw traces, prompts, generated text, model weights, private host paths, or network identifiers. See [`docs/DATA_RELEASE.md`](docs/DATA_RELEASE.md) for the release policy.
+
+## Third-party data and models
+
+Download each dataset from its provider, follow its terms, and cite its authors. The licenses below are the ones stated by the providers at the time of writing; the provider's page is authoritative.
+
+| Dataset | Use in MobiKV | Source | Terms | Reference |
+| --- | --- | --- | --- | --- |
+| GeoLife GPS Trajectories 1.3 | Main mobility trace | [Microsoft Research](https://www.microsoft.com/en-us/download/details.aspx?id=52367) | Terms in the user guide shipped with the download; the provider asks users to cite [1]-[3] | [1]-[3] |
+| Mooncake conversation trace | Main request trace | [`FAST25-release/traces`](https://github.com/kvcache-ai/Mooncake/tree/main/FAST25-release/traces) in kvcache-ai/Mooncake | Apache-2.0 (repository license) | [4] |
+| Taxi Service Trajectory (ECML PKDD 2015), Porto | Mobility robustness | [UCI Machine Learning Repository, dataset 339](https://archive.ics.uci.edu/dataset/339) | CC BY 4.0 | [5] |
+| WildChat-1M | Request-trace robustness | [allenai/WildChat-1M](https://huggingface.co/datasets/allenai/WildChat-1M) | ODC-BY | [6] |
+
+Model weights are not part of this repository. Each model in [`configs/model_matrix.json`](configs/model_matrix.json) is governed by the license on its own model card. Some families, such as Llama and Gemma, require you to accept their terms before download. Obtain the weights from the official publisher and comply with those terms, including any restrictions on use and redistribution.
+
+The project page stylesheet is adapted from an MIT-licensed project page; see [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
+
+## Baselines
+
+The six baselines are our adaptations of published policies to KV cache scheduling at the mobile edge. They are reimplemented in `mobikv/simulator.py`; no code from the original systems is included.
+
+| Baseline | Adapted from |
+| --- | --- |
+| Follow-Me | Follow Me Cloud [7] |
+| MDP | MDP-based service migration [8] |
+| Lyapunov | Lyapunov-based dynamic service placement [9] |
+| Preble | Preble prompt-aware scheduling [10] |
+| Mooncake | The Mooncake KVCache-centric scheduler [4] |
+| ESP | LoongServe elastic sequence parallelism [11] |
+
+## References
+
+1. Y. Zheng, L. Zhang, X. Xie, and W.-Y. Ma. Mining interesting locations and travel sequences from GPS trajectories. WWW, 2009.
+2. Y. Zheng, Q. Li, Y. Chen, X. Xie, and W.-Y. Ma. Understanding mobility based on GPS data. UbiComp, 2008.
+3. Y. Zheng, X. Xie, and W.-Y. Ma. GeoLife: A collaborative social networking service among user, location and trajectory. IEEE Data Engineering Bulletin, 33(2), 2010.
+4. R. Qin, Z. Li, W. He, J. Cui, F. Ren, M. Zhang, Y. Wu, W. Zheng, and X. Xu. Mooncake: Trading more storage for less computation, a KVCache-centric architecture for serving LLM chatbot. USENIX FAST, 2025.
+5. Taxi Service Trajectory, Prediction Challenge, ECML PKDD 2015. UCI Machine Learning Repository, dataset 339.
+6. W. Zhao, X. Ren, J. Hessel, C. Cardie, Y. Choi, and Y. Deng. WildChat: 1M ChatGPT interaction logs in the wild. ICLR, 2024.
+7. T. Taleb and A. Ksentini. Follow Me Cloud: Interworking federated clouds and distributed mobile networks. IEEE Network, 27(5), 2013.
+8. S. Wang, R. Urgaonkar, M. Zafer, T. He, K. Chan, and K. K. Leung. Dynamic service migration in mobile edge computing based on Markov decision process. IEEE/ACM Transactions on Networking, 27(3), 2019.
+9. T. Ouyang, Z. Zhou, and X. Chen. Follow me at the edge: Mobility-aware dynamic service placement for mobile edge computing. IEEE Journal on Selected Areas in Communications, 36(10), 2018.
+10. V. Srivatsa, Z. He, R. Abhyankar, D. Li, and Y. Zhang. Preble: Efficient distributed prompt scheduling for LLM serving. ICLR, 2025.
+11. B. Wu, S. Liu, Y. Zhong, P. Sun, X. Liu, and X. Jin. LoongServe: Efficiently serving long-context large language models with elastic sequence parallelism. ACM SOSP, 2024.
+
+## Citation
+
+The paper is not public yet. A BibTeX entry and the arXiv link will be added here when it is; until then, see [`CITATION.cff`](CITATION.cff).
 
 
 ## License

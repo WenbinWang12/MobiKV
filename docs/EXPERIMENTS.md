@@ -17,4 +17,4 @@ The final system keeps the mechanism flags explicit:
 --pp_min_rel 0.25 --pp_qmin 1024 --pp_grid 32 --bg_dfb 1
 ```
 
-The six adapted published baselines are Follow-Me Cloud, Wang et al.'s MDP migration, Lyapunov placement, Preble, Mooncake's scheduler, and LoongServe-style ESP. All policies use the same hybrid repair primitive when a KV range is missing.
+The six adapted published baselines are Follow-Me Cloud (Taleb and Ksentini, IEEE Network 2013), MDP-based service migration (Wang et al., IEEE/ACM ToN 2019), Lyapunov-based service placement (Ouyang et al., IEEE JSAC 2018), Preble (Srivatsa et al., ICLR 2025), Mooncake's scheduler (Qin et al., USENIX FAST 2025), and LoongServe-style ESP (Wu et al., ACM SOSP 2024). Full references are in the repository README. All policies use the same hybrid repair primitive when a KV range is missing.

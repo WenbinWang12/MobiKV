@@ -1,3 +1,8 @@
+/*
+ * Portions of this stylesheet are adapted from the QUEST project page
+ * (https://github.com/OSU-NLP-Group/QUEST), MIT License,
+ * Copyright (c) 2026 OSU-NLP-Group. See THIRD_PARTY_NOTICES.md.
+ */
 :root {
   --bg: #F2F4F8;
   --paper: #FFFFFF;
@@ -25,7 +30,6 @@
   --negative: #DC2626;
   --negative-soft: #FEE2E2;
   --negative-line: #FCA5A5;
-  --quest-row: rgba(11, 158, 138, 0.08);
   --gray-bar: #94A3B8;
   --cover-bg: #0D1117;
   --shadow: 0 1px 3px rgba(10,15,40,0.04), 0 8px 32px rgba(10,15,40,0.08);
@@ -722,7 +726,7 @@ a { color: inherit; text-decoration: none; }
 .legend-4b { background: #93C5FD; }
 .legend-9b { background: #60A5FA; }
 .legend-35b { background: #3A55E3; border: 1px solid #273DB5; }
-.legend-quest-model { background: #4360E8; border: 1px solid #344BC7; }
+
 .legend-tongyi { background: #C63F00; border: 1px solid #A63400; }
 .legend-openresearcher { background: #008B5F; border: 1px solid #00754F; }
 .legend-sft { background: #3B82F6; border: 1px solid #2563EB; }
@@ -1019,31 +1023,6 @@ a { color: inherit; text-decoration: none; }
   color: #9A3412 !important;
 }
 
-.agent-quest-group-row td {
-  border-top: 1px solid rgba(14, 116, 144, 0.22);
-  border-bottom: 1px solid rgba(14, 116, 144, 0.18);
-  background: #EEF2F7 !important;
-  color: #0369A1;
-}
-
-.agent-quest-row td {
-  border-bottom-color: rgba(14, 165, 233, 0.16);
-  background: #EAF8FF;
-}
-
-.agent-quest-row td:first-child {
-  background: #EAF8FF !important;
-  color: #0369A1 !important;
-}
-
-.agent-quest-row + .agent-quest-row td {
-  border-top: 1px solid rgba(14, 165, 233, 0.18);
-}
-
-.agent-quest-row:last-child td {
-  border-bottom: 1px solid rgba(14, 116, 144, 0.26);
-}
-
 .agent-comparison-table td strong {
   display: inline;
   min-width: 0;
@@ -1157,24 +1136,6 @@ a { color: inherit; text-decoration: none; }
   text-overflow: ellipsis;
 }
 
-.benchmark-bar-row.is-quest {
-  position: relative;
-  isolation: isolate;
-}
-.benchmark-bar-row.is-quest::before {
-  content: '';
-  position: absolute;
-  inset: -2px -8px;
-  background: #DBEAFE;
-  border-radius: 6px;
-  z-index: -1;
-}
-.benchmark-bar-row.is-quest .benchmark-bar-label,
-.benchmark-bar-row.is-quest .benchmark-bar-value {
-  color: #2563EB;
-  font-weight: 800;
-}
-
 .benchmark-bar-track {
   position: relative;
   height: 14px;
@@ -1244,7 +1205,6 @@ a { color: inherit; text-decoration: none; }
   margin: 0 0 16px;
   line-height: 1.75;
 }
-
 
 .body-copy p:last-child,
 .subsection p:last-child,
@@ -1892,25 +1852,6 @@ img.figure-media {
   padding: 10px 18px;
 }
 
-.leaderboard-table .lb-group-quest td {
-  background: rgba(190, 91, 43, 0.08);
-  color: var(--accent);
-}
-
-.leaderboard-table .lb-quest-row td {
-  background: rgba(190, 91, 43, 0.03);
-  color: var(--text);
-}
-
-.leaderboard-table .lb-quest-row .col-model {
-  background: rgba(190, 91, 43, 0.03);
-}
-
-.leaderboard-table tbody tr.lb-quest-row:hover td,
-.leaderboard-table tbody tr.lb-quest-row:hover .col-model {
-  background: rgba(190, 91, 43, 0.07);
-}
-
 .leaderboard-table td.cell-na {
   color: #b0bac8;
   font-size: 1em;
@@ -2079,25 +2020,6 @@ sup.val-dagger {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
   font-size: 0.66rem;
   letter-spacing: 0.02em;
-}
-
-.comparison-quest-row td {
-  background: var(--quest-row);
-}
-
-.comparison-quest-row .comparison-model-cell {
-  background: var(--quest-row);
-  box-shadow: inset 3px 0 0 var(--mint-deep);
-}
-
-.comparison-quest-row .comparison-model-label,
-.comparison-quest-row .comparison-model-org {
-  color: var(--mint-deep);
-}
-
-.comparison-table tbody tr.comparison-quest-row:hover td,
-.comparison-table tbody tr.comparison-quest-row:hover .comparison-model-cell {
-  background: rgba(11, 158, 138, 0.12);
 }
 
 .comparison-center {
@@ -2287,7 +2209,6 @@ sup.val-dagger {
   background: #E2E8F0;
   border-color: #CBD5E1;
 }
-
 
 .comparison-legend {
   display: flex;
@@ -2959,37 +2880,7 @@ sup.val-dagger {
   .footer-links { gap: 12px; }
 }
 
-/* ── Quest demo chat ───────────────────────────────────────── */
-.quest-chat {
-  margin-top: 18px;
-  border: 1px solid rgba(10, 15, 40, 0.08);
-  border-radius: 12px;
-  background: #FFFFFF;
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  box-shadow: 0 1px 2px rgba(10, 15, 40, 0.04);
-}
-.quest-chat-stream {
-  min-height: 160px;
-  max-height: 480px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 4px;
-}
-.quest-chat-stream:empty {
-  display: none;
-}
-.quest-chat-stream:empty::before {
-  content: 'Your conversation will appear here.';
-  color: #94A3B8;
-  font-size: 13px;
-  margin: auto;
-  font-style: italic;
-}
+
 .qc-msg { display: flex; }
 .qc-msg-user { justify-content: flex-end; }
 .qc-msg-assistant { justify-content: flex-start; }
@@ -3030,120 +2921,4 @@ sup.val-dagger {
 .qc-bubble pre code { background: transparent; padding: 0; }
 .qc-thinking { color: #64748B; font-style: italic; }
 .qc-error    { color: #B91C1C; }
-.quest-chat-input {
-  display: flex;
-  gap: 10px;
-  align-items: flex-end;
-}
-.quest-chat-input textarea {
-  flex: 1;
-  resize: vertical;
-  min-height: 56px;
-  padding: 11px 13px;
-  border: 1px solid rgba(10, 15, 40, 0.12);
-  border-radius: 10px;
-  font: inherit;
-  font-size: 14px;
-  line-height: 1.5;
-  background: #FAFBFC;
-}
-.quest-chat-input textarea:focus {
-  outline: 2px solid #93C5FD;
-  outline-offset: 0;
-  border-color: #60A5FA;
-  background: #FFFFFF;
-}
-.quest-chat-input button {
-  min-height: 48px;
-  padding: 10px 18px;
-  background: #1D4ED8;
-  color: #FFFFFF;
-  border: 0;
-  border-radius: 10px;
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s ease;
-}
-.quest-chat-input button:hover:not(:disabled) { background: #1E40AF; }
-.quest-chat-input button:disabled {
-  background: #94A3B8;
-  cursor: not-allowed;
-}
-.quest-chat-status {
-  margin: 0;
-  font-size: 12.5px;
-  color: #64748B;
-  min-height: 0;
-}
-.quest-chat-advanced {
-  font-size: 13px;
-}
-.quest-chat-advanced summary {
-  cursor: pointer;
-  color: #475569;
-  font-weight: 600;
-  padding: 4px 0;
-  user-select: none;
-  list-style: none;
-}
-.quest-chat-advanced summary::before {
-  content: '▸ ';
-  display: inline-block;
-  transition: transform 0.15s ease;
-  color: #94A3B8;
-}
-.quest-chat-advanced[open] summary::before {
-  content: '▾ ';
-}
-.quest-chat-controls {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 10px;
-  margin-top: 8px;
-}
-.quest-chat-controls label {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  font-size: 12px;
-  color: #64748B;
-  font-weight: 600;
-}
-.quest-chat-controls input,
-.quest-chat-controls select {
-  padding: 6px 10px;
-  border: 1px solid rgba(10, 15, 40, 0.12);
-  border-radius: 8px;
-  font: inherit;
-  font-size: 13px;
-  background: #FAFBFC;
-  color: #0F172A;
-  font-weight: 400;
-  height: 32px;
-  appearance: none;
-  -webkit-appearance: none;
-}
-.quest-chat-controls select {
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path fill='none' stroke='%2364748B' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round' d='M1 1.5l5 5 5-5'/></svg>");
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-  padding-right: 28px;
-}
-.quest-chat-controls input:focus,
-.quest-chat-controls select:focus {
-  outline: 2px solid #93C5FD;
-  outline-offset: 0;
-  border-color: #60A5FA;
-  background-color: #FFFFFF;
-}
 
-@media (max-width: 760px) {
-  .quest-chat-input {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .quest-chat-input button {
-    width: 100%;
-  }
-}
