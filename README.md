@@ -17,9 +17,16 @@ Decode-first background replay gives foreground decoding priority while a replic
 
 ## Snapshot
 
-The Qwen3-8B simulator rho sweep is complete and released under [`docs/data`](docs/data): 41 rho points, seven policies, and 20 seeds per point (861 aggregates). The Qwen3-8B online-replay aggregate is also complete: an NVIDIA A800 80GB PCIe run with three edge shards, 318 pooled RPP requests, and no send errors or wait timeouts. The released RPP mechanism matrix is the current three-model, 180-trial subset; the cross-model simulator aggregate and full mechanism grid remain under final validation.
+The numbers below come from the final evaluation campaign (2026-11-24); the aggregates are under [`docs/data`](docs/data/). Simulations use cost profiles measured on NVIDIA A800 80GB GPUs and 20 mobility seeds.
 
-The project page contains the overview, ratio sweep, cross-model table, real-GPU validation, and reproducibility links. Aggregate summaries and their manifests are available under [`docs/data`](docs/data/).
+- **Cross-model simulation.** Eight models and seven policies at the full-speed point (one A800 per server, 10 Gb/s links): MobiKV has the lowest mean follow-up TTFT in 21 of the 24 TTFT cells, and its TPOT is within 7% of the best baseline in every cell.
+- **Ratio sweep.** Qwen3-8B over 18 values of the transfer-to-compute ratio: MobiKV's P90 follow-up TTFT is 0.55-0.80 of the best baseline at every point.
+- **RPP on two GPUs.** 78 configurations of five models: the speedup reaches 82-94% of the bound in the 54 configurations with a measured link rate, and the final logits are bitwise identical to chunked prefill in all 510 splits.
+- **Replay on three GPUs.** Qwen3-8B at the constrained point, seven policies, seeds 41-43: MobiKV's follow-up TTFT is 0.18, 2.24, and 7.61 s at P50, P90, and P99, against 0.30-0.40, 4.83-7.44, and 14.5-17.7 s for the four load-aware baselines.
+
+The simulator, cost files, and protocol documents in this repository are those of the earlier design; the code that produced the final campaign has not been merged yet, so these numbers cannot be reproduced from this revision.
+
+The project page shows the overview video, the ratio sweep, and the real-GPU results.
 
 ## Repository layout
 

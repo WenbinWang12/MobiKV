@@ -87,13 +87,14 @@
               <p>MobiKV treats the KV cache as a schedulable distributed state. The scheduler tracks cache holders, transfer backlog, compute queues, and decode pressure, then chooses placement and repair actions using the observed compute-to-transfer ratio <span aria-label="rho sub s k">&#x03C1;<sub>sk</sub></span>.</p>
             </div>
             <div class="table-block">
-              <div class="table-label">Reported outcomes</div>
+              <div class="table-label">Reported outcomes (final campaign, 2026-11-24)</div>
               <table class="content-table">
                 <thead><tr><th>Measurement</th><th>Reported outcome</th></tr></thead>
                 <tbody>
-                  <tr><td>Qwen3-8B simulator rho sweep</td><td>18 &rho; points &times; 7 policies &times; 20 seeds on full-speed A800 cost profiles; MobiKV's p90 follow-up TTFT is 0.55&ndash;0.80 of the best baseline at every point</td></tr>
-                  <tr><td>Quiet A800 mechanism rerun</td><td>Current 3-model, 180-trial subset released; full-grid validation pending</td></tr>
-                  <tr><td>Qwen3-8B online replay (A800, 3 edge shards)</td><td>318 pooled RPP requests; TTFT p50/p99 0.453/4.535 s; TPOT p50/p99 32.7/63.2 ms; 0 send errors/timeouts</td></tr>
+                  <tr><td>Cross-model simulation, full-speed point</td><td>8 models &times; 7 policies &times; 20 seeds; MobiKV has the lowest mean follow-up TTFT in 21 of the 24 TTFT cells, and its TPOT is within 7% of the best baseline in every cell</td></tr>
+                  <tr><td>Qwen3-8B simulator &rho; sweep</td><td>18 &rho; points &times; 7 policies &times; 20 seeds on full-speed A800 cost profiles; MobiKV's P90 follow-up TTFT is 0.55&ndash;0.80 of the best baseline at every point</td></tr>
+                  <tr><td>RPP on two A800 GPUs</td><td>78 configurations of five models; the speedup reaches 82&ndash;94% of the bound in the 54 configurations with a measured link rate and is 1.78&ndash;1.86&times; for &rho; &lt; 1; the final logits are bitwise identical to chunked prefill in all 510 splits</td></tr>
+                  <tr><td>Replay on three A800 GPUs (Qwen3-8B, constrained point)</td><td>Seven policies, seeds 41&ndash;43 pooled; MobiKV's follow-up TTFT is 0.18 / 2.24 / 7.61 s at P50 / P90 / P99, against 0.30&ndash;0.40 / 4.83&ndash;7.44 / 14.5&ndash;17.7 s for the four load-aware baselines; no send errors or timeouts</td></tr>
                 </tbody>
               </table>
             </div>
@@ -120,16 +121,16 @@
           <section class="section" id="analysis">
             <div class="section-head"><h2>Analysis</h2></div>
             <div class="body-copy">
-              <p>The ratio sweep exposes where replica-assisted prefill helps and where transfer dominates. The same operating-point view explains the tail-latency changes in the simulator and the online replay validation.</p>
-              <p>We report median and tail behavior separately because a policy can improve typical follow-up time while still creating queueing spikes. The A800 measurements therefore include p50, p90, and p99 latency summaries together with TPOT.</p>
+              <p>The end-to-end results are simulated with cost profiles measured on A800 GPUs. Two real-GPU experiments check them: a replay of the job streams of seven policies on three GPUs with real decoding, and a measurement of replica-assisted parallel prefill on two GPUs against its analytical bound.</p>
+              <p>We report median and tail behavior separately because a policy can improve typical follow-up time while still creating queueing spikes. The replay covers one model at the constrained point, on one node whose processes emulate the links.</p>
             </div>
             <figure class="figure-block">
-              <img class="figure-media" src="./assets/tradeoff.svg" alt="Comparison of follow-up p95 TTFT and p95 TPOT across MobiKV and adapted baselines." loading="lazy" decoding="async" />
-              <figcaption class="figure-caption">Figure 3. Tail TTFT and TPOT in the default replay scenario.</figcaption>
+              <img class="figure-media" src="./assets/tradeoff.svg" width="1200" height="410" alt="Two panels of follow-up TTFT and TPOT at P50, P90 and P99 for seven replayed policies with 95% intervals; MobiKV has the lowest TTFT at every percentile." loading="lazy" decoding="async" />
+              <figcaption class="figure-caption">Figure 3. Replay of the job streams of three servers on three A800 GPUs with real decoding (Qwen3-8B, constrained point, seeds 41&ndash;43 pooled): follow-up TTFT and TPOT of seven policies. Bars give 95% bootstrap intervals, resampling requests within each seed. The requests that reach the three servers differ between policies.</figcaption>
             </figure>
             <figure class="figure-block">
-              <img class="figure-media" src="./assets/bounds.svg" alt="Measured replica-assisted prefill speedups compared with analytical bounds." loading="lazy" decoding="async" />
-              <figcaption class="figure-caption">Figure 4. RPP measurements compared with the analytical speedup bounds.</figcaption>
+              <img class="figure-media" src="./assets/bounds.svg" width="740" height="450" alt="Measured speedup of one-helper RPP against the transfer-to-compute ratio for five models, below the bound min of 2 and 1 plus 1 over rho." loading="lazy" decoding="async" />
+              <figcaption class="figure-caption">Figure 4. Speedup of one-helper RPP over prefill on one GPU, measured on two A800 GPUs, against the bound min{2, 1 + 1/&rho;}. Each point is the best front fraction of one configuration (median of three). Filled marks: the delivered link rate was measured. Hollow marks: the helper's computation limited the arrival, so &rho; is only known to lie on the bar.</figcaption>
             </figure>
           </section>
 

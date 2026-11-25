@@ -1,15 +1,15 @@
 {
-  "source_commit": "817baba",
+  "source": "final evaluation campaign, 2026-11-24",
   "algorithm": "SHA-256",
   "files": {
-    "docs/data/aggregate/online_replay_qwen3.csv": "b4ba5b083ba3bdc3e5ee2a77abf2639cbd83e95bf5fcb6c7d981de1ea6b59843",
-    "docs/data/aggregate/rho_sweep_qwen3_aggregate.csv": "1eb00ee233af8dfa8bf1f8855e4ca8bda1e7e0909bbcc843c73d08a00cf7e38e",
-    "docs/data/aggregate/rpp_g25_summary.csv": "6a240871ffd3ce1ca330afdb0d1403a172e125026c1f35c2caaa33f9f223c3d8",
-    "docs/data/aggregate/rpp_mechanism_matrix.csv": "7847e7c9a473865259d321d93579063cc6badac61c24424d46786e689a886c04",
-    "docs/data/aggregate/table1_cross_model.csv": "ba05da147ac8ba559253d9f89c87078e79f2ff1ba990f0f54785620311cb2622",
-    "docs/data/manifests/online_replay_qwen3_manifest.json": "d906ab07832cf5602707c6b98727943d94548f245df24d93debabb3917e86bb5",
-    "docs/data/model_matrix.json": "45f955d83a1719b93136224e30557d79f1fecf3ae711412e7bb06dc55fd88588",
-    "docs/data/README.md": "3c991c59f711c4b9c559c470622efca2b22bf77a810d6fd1962bf4fd3d3ab2b7",
-    "docs/data/schema/online_replay_summary.schema.json": "324a6d37ebf03605b0cc353f26e9162dc51670c4acab6075647f8df9d84ff35c"
+    "docs/data/README.md": "ca5f0ef7859d8198974d82b15a4a509ab6cec484f0a9575e5028f784eb073817",
+    "docs/data/aggregate/cross_model_constrained.csv": "8026d70a746e52bcd433ff49f16bdf0aa544a7920099328bd018d0f8dd9cb390",
+    "docs/data/aggregate/cross_model_full_speed.csv": "8a8300407323c27e5e1bfa81be21dedd3de7596a8e06cf1893dc5e427e99c0dc",
+    "docs/data/aggregate/cross_model_full_speed_slow_links.csv": "b04221aa86ac0aafa752de7485ea6f08eeef4e3c29881593412658cde28fdf3b",
+    "docs/data/aggregate/replay_three_gpu.csv": "d7cf44312f21d82bdc91131d9f2ae55083d84a8209385db354325a30d4801255",
+    "docs/data/aggregate/replay_three_gpu_pooled.csv": "372d5e49ace0568166e32ab978ca873ca2e9d29584421d41fac3f38bf02ea12f",
+    "docs/data/aggregate/rho_sweep_qwen3_a800.csv": "468ab69ebb119b1b536e87d701e4701a45f7670d5ad0b2110c331031aa0784f4",
+    "docs/data/aggregate/rpp_two_gpu_cells.csv": "a85b4436deef7eee497ca75d4b084aa34c71f16c1654ca742d8f0f20bf57b993",
+    "docs/data/model_matrix.json": "45f955d83a1719b93136224e30557d79f1fecf3ae711412e7bb06dc55fd88588"
   }
 }
