@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=19" />
+    <link rel="stylesheet" href="./styles.css?v=20" />
   </head>
   <body>
     <div class="site-shell">
@@ -52,8 +52,11 @@
                 </p>
               </div>
 
-              <figure class="hero-run-trace" aria-label="MobiKV system overview">
-                <img src="./assets/overview.svg" alt="MobiKV overview: a follow-up turn of a moving user reaches a server without its KV cache; the controller chooses between repair, forwarding to the cache holder, and replica-assisted parallel prefill, and refreshes the replica between turns." width="514" height="219" loading="eager" decoding="async" />
+              <figure class="hero-run-trace" aria-label="MobiKV overview video">
+                <video controls preload="metadata" playsinline poster="./assets/overview-poster.jpg" width="1920" height="1080" aria-label="Narrated two-minute animation of the MobiKV overview: a follow-up turn of a moving user reaches a server without its KV cache; the controller chooses between repair, forwarding to the cache holder, and replica-assisted parallel prefill, and refreshes the replica between turns.">
+                  <source src="./assets/overview.mp4" type="video/mp4" />
+                  <a href="./assets/overview.mp4">Download the overview video</a>
+                </video>
               </figure>
 
               <div class="resource-links" aria-label="MobiKV resources">
@@ -109,7 +112,7 @@
               <div><h3>Decode-first replay</h3><p>Give active decode work priority over background replica refresh so repaired state does not increase token-time variance.</p></div>
             </div>
             <figure class="figure-block">
-              <img class="figure-media" src="./assets/rho-sweep.svg" alt="Three-panel sweep of follow-up TTFT across the measured rho sub s k ratio for MobiKV and comparison policies." loading="lazy" decoding="async" />
+              <img class="figure-media" src="./assets/rho-sweep.svg" width="1200" height="410" alt="Three-panel sweep of follow-up TTFT across the measured rho sub s k ratio for MobiKV and comparison policies." loading="lazy" decoding="async" />
               <figcaption class="figure-caption">Figure 2. Follow-up TTFT across <span aria-label="rho sub s k">&#x03C1;<sub>sk</sub></span> for Qwen3-8B. Lines show seed means and pale bands show the corresponding standard deviation.</figcaption>
             </figure>
           </section>
