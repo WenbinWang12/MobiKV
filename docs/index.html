@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=18" />
+    <link rel="stylesheet" href="./styles.css?v=19" />
   </head>
   <body>
     <div class="site-shell">
@@ -19,6 +19,7 @@
           <a href="#tasks">Overview</a>
           <a href="#analysis">Analysis</a>
           <a href="#data">Reproduction</a>
+          <a href="#citation">Citation</a>
         </nav>
       </header>
 
@@ -64,6 +65,10 @@
                   <span class="resource-icon" aria-hidden="true"><svg viewBox="0 0 24 24" role="img" focusable="false"><path d="M6 2h8l6 6v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm7 1.5V9h5.5L13 3.5ZM8 13v1.5h8V13H8Zm0 3.5V18h6v-1.5H8Z" /></svg></span>
                   <strong>Paper</strong><small>Coming soon</small>
                 </span>
+                <a class="resource-link" href="#citation">
+                  <span class="resource-icon" aria-hidden="true"><svg viewBox="0 0 24 24" role="img" focusable="false"><path d="M5 6h6v6.2c0 3-1.7 5-4.8 5.8l-.6-1.6c1.6-.6 2.4-1.5 2.5-2.9H5V6Zm8.5 0h6v6.2c0 3-1.7 5-4.8 5.8l-.6-1.6c1.6-.6 2.4-1.5 2.5-2.9h-3.1V6Z" /></svg></span>
+                  <strong>BibTeX</strong><small>Cite</small>
+                </a>
               </div>
             </div>
 
@@ -134,6 +139,20 @@
             <div class="essay-grid">
               <div><h3>Code and configurations</h3><p><a href="https://github.com/WenbinWang12/MobiKV" target="_blank" rel="noopener">GitHub</a> contains the implementation and configuration templates for the simulator and online replay.</p></div>
               <div><h3>Aggregate data</h3><p>The <a href="https://github.com/WenbinWang12/MobiKV/tree/main/docs/data" target="_blank" rel="noopener">data release</a> contains sanitized summaries and the field definitions used in the tables and figures.</p></div>
+            </div>
+          </section>
+
+          <section class="section citation-section" id="citation">
+            <div class="section-head"><h2>Citation</h2></div>
+            <div class="citation-card">
+              <p>The paper is not public yet. Until the arXiv entry is available, please cite the project as follows.</p>
+              <pre class="citation-code"><code>@misc{wang2026mobikv,
+  title  = {MobiKV: Replica-Assisted KV Cache Scheduling for Multi-Turn LLM Serving at the Mobile Edge},
+  author = {Wang, Wenbin and Wang, Runan and Liu, Jiangchuan and Hu, Xiping},
+  year   = {2026},
+  note   = {Preprint forthcoming},
+  url    = {https://github.com/WenbinWang12/MobiKV}
+}</code></pre>
             </div>
           </section>
 

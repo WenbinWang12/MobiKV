@@ -130,7 +130,17 @@ The six baselines are our adaptations of published policies to KV cache scheduli
 
 ## Citation
 
-The paper is not public yet. A BibTeX entry and the arXiv link will be added here when it is; until then, see [`CITATION.cff`](CITATION.cff).
+The paper is not public yet. Until the arXiv entry is available, please cite the project as follows; the entry will be updated with the arXiv identifier.
+
+```bibtex
+@misc{wang2026mobikv,
+  title  = {MobiKV: Replica-Assisted KV Cache Scheduling for Multi-Turn LLM Serving at the Mobile Edge},
+  author = {Wang, Wenbin and Wang, Runan and Liu, Jiangchuan and Hu, Xiping},
+  year   = {2026},
+  note   = {Preprint forthcoming},
+  url    = {https://github.com/WenbinWang12/MobiKV}
+}
+```
 
 
 ## License
