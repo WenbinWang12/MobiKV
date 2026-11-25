@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Plot follow-up TTFT against the transfer-to-compute ratio for the project page.
 
-Reads the released aggregate (seed mean and standard deviation per policy and ratio)
-and writes ``rho-sweep.svg`` and ``rho-sweep.png``. Requires matplotlib
+Reads the released aggregate (per policy and ratio: the mean over mobility seeds and
+the mean minus/plus one sample standard deviation) and writes ``rho-sweep.svg`` and ``rho-sweep.png``. Requires matplotlib
 (``pip install -e ".[plot]"``).
 """
 
@@ -23,12 +23,12 @@ ROOT = Path(__file__).resolve().parents[1]
 
 # (key in the CSV, label, colour); MobiKV is drawn last so it stays on top.
 POLICIES = [
-    ("follow_me_cloud", "Follow-Me", "#4DBBD5"),
-    ("wang_ton19_mdp", "MDP", "#E64B35"),
-    ("ouyang_jsac18", "Lyapunov", "#00A087"),
-    ("preble_iclr25", "Preble", "#CC79A7"),
-    ("mooncake_fast25", "Mooncake", "#E6A01E"),
-    ("loongserve_sosp24", "ESP", "#8491B4"),
+    ("follow_me", "Follow-Me", "#4DBBD5"),
+    ("mdp", "MDP", "#E64B35"),
+    ("lyapunov", "Lyapunov", "#00A087"),
+    ("preble", "Preble", "#CC79A7"),
+    ("mooncake", "Mooncake", "#E6A01E"),
+    ("esp", "ESP", "#8491B4"),
     ("mobikv", "MobiKV", "#1F2A44"),
 ]
 METRICS = [("p50", "P50"), ("p90", "P90"), ("p99", "P99")]
@@ -36,13 +36,14 @@ INK = "#293641"
 
 
 def load(path: Path) -> dict:
-    """Return {(policy, metric): [(rho, mean, std), ...]} sorted by rho."""
+    """Return {(policy, metric): [(rho, mean, lower, upper), ...]} sorted by rho."""
     rows = defaultdict(list)
     with path.open(encoding="utf-8", newline="") as f:
         for r in csv.DictReader(f):
-            rows[r["method"], r["metric"]].append(
-                (float(r["rho"]), float(r["mean"]), float(r["std"]))
-            )
+            for metric, _ in METRICS:
+                rows[r["method"], metric].append(
+                    tuple(float(r[c]) for c in ("rho", metric, f"{metric}_lo", f"{metric}_hi"))
+                )
     return {k: sorted(v) for k, v in rows.items()}
 
 
@@ -53,7 +54,7 @@ def plain(value: float, _pos: int) -> str:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument(
-        "--data", type=Path, default=ROOT / "docs/data/aggregate/rho_sweep_qwen3_aggregate.csv"
+        "--data", type=Path, default=ROOT / "docs/data/aggregate/rho_sweep_qwen3_a800.csv"
     )
     parser.add_argument("--out", type=Path, default=ROOT / "docs/assets/rho-sweep")
     args = parser.parse_args()
@@ -61,9 +62,10 @@ def main() -> None:
 
     plt.rcParams.update(
         {
-            "font.family": "sans-serif",
-            "font.sans-serif": ["Segoe UI", "Helvetica Neue", "Arial", "DejaVu Sans"],
-            "font.size": 11,
+            "font.family": "serif",
+            "font.serif": ["Times New Roman", "Times", "Nimbus Roman", "STIXGeneral"],
+            "mathtext.fontset": "stix",
+            "font.size": 12,
             "axes.edgecolor": "#AEB6C2",
             "axes.linewidth": 0.8,
             "axes.labelcolor": INK,
@@ -81,8 +83,8 @@ def main() -> None:
             pts = data[key, metric]
             x = [p[0] for p in pts]
             mean = [p[1] for p in pts]
-            lower = [max(p[1] - p[2], 1e-9) for p in pts]
-            upper = [p[1] + p[2] for p in pts]
+            lower = [p[2] for p in pts]
+            upper = [p[3] for p in pts]
             own = key == "mobikv"
             ax.fill_between(x, lower, upper, color=colour, alpha=0.22, linewidth=0, zorder=2)
             (line,) = ax.plot(
@@ -98,7 +100,7 @@ def main() -> None:
                 handles.append(line)
             lo, hi = min(lo, *lower), max(hi, *upper)
         ax.set_yscale("log")
-        ax.set_ylim(lo / 1.25, hi * 1.25)
+        ax.set_ylim(lo / 1.2, hi * 1.2)
         ax.set_xlim(0, 10)
         ax.set_xticks(range(0, 11, 2))
         ax.yaxis.set_major_locator(LogLocator(base=10, subs=(1.0, 2.0, 5.0)))
@@ -107,16 +109,16 @@ def main() -> None:
         ax.grid(True, which="major", color="#E3E7EE", linewidth=0.7, zorder=0)
         ax.axvline(1, color="#8B95A3", linewidth=0.8, linestyle=(0, (4, 3)), zorder=1)
         ax.annotate(
-            "ρ = 1",
-            xy=(1, 0),
+            r"$\rho_{8k}=1$",
+            xy=(1, 1),
             xycoords=("data", "axes fraction"),
-            xytext=(5, 6),
+            xytext=(5, -13),
             textcoords="offset points",
-            fontsize=9.5,
+            fontsize=10.5,
             color="#6B7685",
         )
-        ax.set_title(title, fontsize=12.5, fontweight="bold", pad=8)
-        ax.set_xlabel("Transfer-to-compute ratio ρ")
+        ax.set_title(title, fontsize=13.5, fontweight="bold", pad=8)
+        ax.set_xlabel(r"Transfer-to-compute ratio $\rho_{8k}$")
         ax.tick_params(length=3, width=0.8)
         for side in ("top", "right"):
             ax.spines[side].set_visible(False)
@@ -126,7 +128,7 @@ def main() -> None:
         loc="outside upper center",
         ncols=len(POLICIES),
         frameon=False,
-        fontsize=10.5,
+        fontsize=11.5,
         handlelength=1.8,
         columnspacing=1.8,
     )

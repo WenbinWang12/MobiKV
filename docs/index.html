@@ -91,7 +91,7 @@
               <table class="content-table">
                 <thead><tr><th>Measurement</th><th>Reported outcome</th></tr></thead>
                 <tbody>
-                  <tr><td>Qwen3-8B simulator rho sweep</td><td>41 &rho; points &times; 7 policies &times; 20 seeds (861 aggregates); cross-model aggregate remains under validation</td></tr>
+                  <tr><td>Qwen3-8B simulator rho sweep</td><td>18 &rho; points &times; 7 policies &times; 20 seeds on full-speed A800 cost profiles; MobiKV's p90 follow-up TTFT is 0.55&ndash;0.80 of the best baseline at every point</td></tr>
                   <tr><td>Quiet A800 mechanism rerun</td><td>Current 3-model, 180-trial subset released; full-grid validation pending</td></tr>
                   <tr><td>Qwen3-8B online replay (A800, 3 edge shards)</td><td>318 pooled RPP requests; TTFT p50/p99 0.453/4.535 s; TPOT p50/p99 32.7/63.2 ms; 0 send errors/timeouts</td></tr>
                 </tbody>
@@ -112,8 +112,8 @@
               <div><h3>Decode-first replay</h3><p>Give active decode work priority over background replica refresh so repaired state does not increase token-time variance.</p></div>
             </div>
             <figure class="figure-block">
-              <img class="figure-media" src="./assets/rho-sweep.svg" width="1200" height="410" alt="Three-panel sweep of follow-up TTFT across the measured rho sub s k ratio for MobiKV and comparison policies." loading="lazy" decoding="async" />
-              <figcaption class="figure-caption">Figure 2. Follow-up TTFT across <span aria-label="rho sub s k">&#x03C1;<sub>sk</sub></span> for Qwen3-8B. Lines show seed means and pale bands show the corresponding standard deviation.</figcaption>
+              <img class="figure-media" src="./assets/rho-sweep.svg" width="1200" height="410" alt="Three panels (P50, P90, P99) of follow-up TTFT against the transfer-to-compute ratio for MobiKV and six baselines; MobiKV is lowest in every panel." loading="lazy" decoding="async" />
+              <figcaption class="figure-caption">Figure 2. Follow-up TTFT against the transfer-to-compute ratio <span aria-label="rho sub 8k">&#x03C1;<sub>8k</sub></span> for Qwen3-8B on full-speed A800 servers; the ratio is varied through the link rate. Lines are means over 20 mobility seeds and bands show &plusmn; one sample standard deviation. The dashed line marks <span aria-label="rho sub 8k equals 1">&#x03C1;<sub>8k</sub> = 1</span>.</figcaption>
             </figure>
           </section>
 
