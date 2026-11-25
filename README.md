@@ -34,6 +34,7 @@ The project page contains the overview, ratio sweep, cross-model table, real-GPU
 | `mobikv/analysis/` | Aggregation and analysis for simulator and replay outputs |
 | `configs/` | Released cost models and the cross-model experiment matrix |
 | `scripts/` | Reproduction launchers, aggregators, and model checks |
+| `tests/` | CPU-only tests run in CI |
 | `docs/` | Experiment protocol, reproducibility notes, data-release policy, and project page |
 
 Raw traces and model weights are not bundled. The preprocessing scripts accept local copies of the public source data, and the data-release policy documents which derived summaries can be shared.
@@ -45,8 +46,10 @@ The supported environment is Linux, Python 3.10, CUDA 12.4, PyTorch 2.6, and Tra
 ```bash
 python3.10 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
+pip install -e .
 ```
+
+Optional extras: `pip install -e ".[gpu]"` for real-GPU measurement and replay, `".[wildchat]"` for WildChat preprocessing, and `".[dev]"` for the test and lint tools.
 
 Real-GPU measurement and replay use NVIDIA A800 80GB PCIe GPUs, a shared local model snapshot, and password-less host-to-host connectivity. Set `MOBIKV_MODEL` to a local Hugging Face snapshot. Model weights stay outside this repository.
 
@@ -68,6 +71,13 @@ Run the bundled CPU smoke test with:
 
 ```bash
 python examples/smoke_test.py
+```
+
+Run the test suite and the linter with:
+
+```bash
+pytest
+ruff check . && ruff format --check .
 ```
 
 The preset expands to the frozen paper configuration. See [`docs/EXPERIMENTS.md`](docs/EXPERIMENTS.md) and [`docs/REPRODUCIBILITY.md`](docs/REPRODUCIBILITY.md) for the full flags, inputs, and measurement protocol.

@@ -4,12 +4,12 @@
 All additional arguments are passed to :mod:`mobikv.simulator`, so a paper
 scenario can be copied directly from a preregistration command line.
 """
+
 from __future__ import annotations
 
 import argparse
 import sys
 from pathlib import Path
-
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -18,22 +18,80 @@ if str(ROOT) not in sys.path:
 
 PRESETS = {
     "mobikv": [
-        "--policy", "mobikv", "--route_first", "p2c", "--cont_min", "0", "--beta", "1",
+        "--policy",
+        "mobikv",
+        "--route_first",
+        "p2c",
+        "--cont_min",
+        "0",
+        "--beta",
+        "1",
     ],
     "mobikv-df": [
-        "--policy", "mobikv", "--route_first", "p2c", "--cont_min", "0", "--beta", "1",
-        "--bg_dfb", "1",
+        "--policy",
+        "mobikv",
+        "--route_first",
+        "p2c",
+        "--cont_min",
+        "0",
+        "--beta",
+        "1",
+        "--bg_dfb",
+        "1",
     ],
     "mobikv-rpp": [
-        "--policy", "mobikv", "--route_first", "p2c", "--cont_min", "0", "--beta", "1",
-        "--pp", "1", "--pp_cold", "1", "--pp_ctrl", "dpp", "--pp_V", "30",
-        "--pp_eps", "0.05", "--pp_min_rel", "0.25", "--pp_qmin", "1024", "--pp_grid", "32",
+        "--policy",
+        "mobikv",
+        "--route_first",
+        "p2c",
+        "--cont_min",
+        "0",
+        "--beta",
+        "1",
+        "--pp",
+        "1",
+        "--pp_cold",
+        "1",
+        "--pp_ctrl",
+        "dpp",
+        "--pp_V",
+        "30",
+        "--pp_eps",
+        "0.05",
+        "--pp_min_rel",
+        "0.25",
+        "--pp_qmin",
+        "1024",
+        "--pp_grid",
+        "32",
     ],
     "mobikv-df-rpp": [
-        "--policy", "mobikv", "--route_first", "p2c", "--cont_min", "0", "--beta", "1",
-        "--pp", "1", "--pp_cold", "1", "--pp_ctrl", "dpp", "--pp_V", "30",
-        "--pp_eps", "0.05", "--pp_min_rel", "0.25", "--pp_qmin", "1024", "--pp_grid", "32",
-        "--bg_dfb", "1",
+        "--policy",
+        "mobikv",
+        "--route_first",
+        "p2c",
+        "--cont_min",
+        "0",
+        "--beta",
+        "1",
+        "--pp",
+        "1",
+        "--pp_cold",
+        "1",
+        "--pp_ctrl",
+        "dpp",
+        "--pp_V",
+        "30",
+        "--pp_eps",
+        "0.05",
+        "--pp_min_rel",
+        "0.25",
+        "--pp_qmin",
+        "1024",
+        "--pp_grid",
+        "32",
+        "--bg_dfb",
+        "1",
     ],
 }
 

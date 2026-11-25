@@ -1,11 +1,3 @@
-# CPU simulation and preprocessing
-numpy==2.2.6
-
-# GPU measurement and replay (CUDA 12.4)
-torch==2.6.0
-transformers==5.16.1
-huggingface_hub==1.29.0
-safetensors
-
-# Optional WildChat parquet preprocessing
-pyarrow>=18.0
+# CPU simulation and preprocessing. For GPU measurement and replay use
+# `pip install -e ".[gpu]"`; for WildChat preprocessing, `pip install -e ".[wildchat]"`.
+numpy>=2.2

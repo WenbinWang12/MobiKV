@@ -13,10 +13,8 @@ import csv
 import hashlib
 import json
 import math
-import os
 from pathlib import Path
 from statistics import mean, stdev
-
 
 PERCENTILES = (0.50, 0.90, 0.95, 0.99)
 
@@ -140,30 +138,38 @@ def main() -> None:
         for metric in ("ttft_s", "tpot_b_s", "tpot_s_s"):
             values = metric_values(rows, metric)
             for probability in PERCENTILES:
-                seed_rows.append({
-                    "model": model,
-                    "method": method,
-                    "seed": seed,
-                    "metric": metric,
-                    "percentile": f"P{int(probability * 100)}",
-                    "estimate": quantile(values, probability),
-                    "n_req": len(values),
-                    "n_invalid": sum(1 for row in rows if row["evaluated"] and row["turn"] >= 2 and row.get(metric) is None),
-                })
+                seed_rows.append(
+                    {
+                        "model": model,
+                        "method": method,
+                        "seed": seed,
+                        "metric": metric,
+                        "percentile": f"P{int(probability * 100)}",
+                        "estimate": quantile(values, probability),
+                        "n_req": len(values),
+                        "n_invalid": sum(
+                            1
+                            for row in rows
+                            if row["evaluated"] and row["turn"] >= 2 and row.get(metric) is None
+                        ),
+                    }
+                )
         resource = payload.get("gpu_util_fg", {})
-        resource_rows.append({
-            "model": model,
-            "method": method,
-            "seed": seed,
-            "gpu_util_mean": resource.get("mean"),
-            "gpu_util_p90": resource.get("p90"),
-            "gpu_util_max": resource.get("max"),
-            "gpu_bg_s": payload.get("gpu_bg_s"),
-            "egress_bg_s": payload.get("egr_bg_s"),
-            "foreground_delay_from_background_s": payload.get("fg_delay_by_bg_s"),
-            "wall_s": payload.get("wall_s"),
-            "stats": json.dumps(payload.get("stats", {}), sort_keys=True),
-        })
+        resource_rows.append(
+            {
+                "model": model,
+                "method": method,
+                "seed": seed,
+                "gpu_util_mean": resource.get("mean"),
+                "gpu_util_p90": resource.get("p90"),
+                "gpu_util_max": resource.get("max"),
+                "gpu_bg_s": payload.get("gpu_bg_s"),
+                "egress_bg_s": payload.get("egr_bg_s"),
+                "foreground_delay_from_background_s": payload.get("fg_delay_by_bg_s"),
+                "wall_s": payload.get("wall_s"),
+                "stats": json.dumps(payload.get("stats", {}), sort_keys=True),
+            }
+        )
 
     aggregate_rows = []
     groups = {}
@@ -173,24 +179,46 @@ def main() -> None:
         key = (row["model"], row["method"], row["metric"], row["percentile"])
         groups.setdefault(key, []).append(float(row["estimate"]))
     for (model, method, metric, percentile), values in sorted(groups.items()):
-        aggregate_rows.append({
-            "model": model,
-            "method": method,
-            "metric": metric,
-            "percentile": percentile,
-            "mean": mean(values),
-            "std": sample_std(values),
-            "n_seed": len(values),
-        })
+        aggregate_rows.append(
+            {
+                "model": model,
+                "method": method,
+                "metric": metric,
+                "percentile": percentile,
+                "mean": mean(values),
+                "std": sample_std(values),
+                "n_seed": len(values),
+            }
+        )
 
     out_dir.mkdir(parents=True, exist_ok=True)
-    write_csv(out_dir / "percentiles_by_seed.csv", seed_rows,
-              ["model", "method", "seed", "metric", "percentile", "estimate", "n_req", "n_invalid"])
-    write_csv(out_dir / "aggregate.csv", aggregate_rows,
-              ["model", "method", "metric", "percentile", "mean", "std", "n_seed"])
-    write_csv(out_dir / "resource_metrics.csv", resource_rows,
-              ["model", "method", "seed", "gpu_util_mean", "gpu_util_p90", "gpu_util_max",
-               "gpu_bg_s", "egress_bg_s", "foreground_delay_from_background_s", "wall_s", "stats"])
+    write_csv(
+        out_dir / "percentiles_by_seed.csv",
+        seed_rows,
+        ["model", "method", "seed", "metric", "percentile", "estimate", "n_req", "n_invalid"],
+    )
+    write_csv(
+        out_dir / "aggregate.csv",
+        aggregate_rows,
+        ["model", "method", "metric", "percentile", "mean", "std", "n_seed"],
+    )
+    write_csv(
+        out_dir / "resource_metrics.csv",
+        resource_rows,
+        [
+            "model",
+            "method",
+            "seed",
+            "gpu_util_mean",
+            "gpu_util_p90",
+            "gpu_util_max",
+            "gpu_bg_s",
+            "egress_bg_s",
+            "foreground_delay_from_background_s",
+            "wall_s",
+            "stats",
+        ],
+    )
     with (out_dir / "request_metrics.jsonl").open("w", encoding="utf-8") as stream:
         for row in all_rows:
             stream.write(json.dumps(row, sort_keys=True) + "\n")
@@ -201,10 +229,7 @@ def main() -> None:
         "n_request_rows": len(all_rows),
         "aggregation": "request percentiles per seed, then mean and sample std across seeds",
         "percentiles": [50, 90, 95, 99],
-        "sha256": {
-            str(path): hashlib.sha256(path.read_bytes()).hexdigest()
-            for path, _ in inputs
-        },
+        "sha256": {str(path): hashlib.sha256(path.read_bytes()).hexdigest() for path, _ in inputs},
     }
     (out_dir / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
 

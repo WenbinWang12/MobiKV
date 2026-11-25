@@ -2922,3 +2922,14 @@ sup.val-dagger {
 .qc-thinking { color: #64748B; font-style: italic; }
 .qc-error    { color: #B91C1C; }
 
+
+.resource-link.is-pending {
+  background: #6B7280;
+  box-shadow: none;
+  cursor: default;
+}
+
+.resource-link.is-pending:hover {
+  background: #6B7280;
+  transform: none;
+}

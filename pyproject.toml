@@ -1,0 +1,54 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mobikv"
+description = "Replica-assisted KV cache scheduling for multi-turn LLM serving at the mobile edge"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE", "THIRD_PARTY_NOTICES.md"]
+authors = [
+    { name = "Wenbin Wang", email = "wenbinwang248@gmail.com" },
+    { name = "Runan Wang" },
+    { name = "Jiangchuan Liu" },
+    { name = "Xiping Hu" },
+]
+dynamic = ["version"]
+dependencies = ["numpy>=2.2"]
+
+[project.optional-dependencies]
+gpu = [
+    "torch==2.6.0",
+    "transformers==5.16.1",
+    "huggingface_hub==1.29.0",
+    "safetensors",
+]
+wildchat = ["pyarrow>=18.0"]
+dev = ["pytest>=8", "ruff>=0.8"]
+
+[project.urls]
+Homepage = "https://wenbinwang12.github.io/MobiKV/"
+Repository = "https://github.com/WenbinWang12/MobiKV"
+
+[tool.setuptools.dynamic]
+version = { attr = "mobikv.__version__" }
+
+[tool.setuptools.packages.find]
+include = ["mobikv*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B"]
+ignore = [
+    "E501", # the formatter wraps code; long strings and comments are left alone
+    "E741", # single-letter names follow the paper's notation
+    "B023", # closures defined in loops are called within the same iteration
+]
