@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="1230" viewBox="0 0 400 1230" role="img" aria-labelledby="mobile-overview-title mobile-overview-description">
+  <title id="mobile-overview-title">How MobiKV serves a mobile conversation</title>
+  <desc id="mobile-overview-description">Three vertically arranged steps describe MobiKV. For each new conversation turn, MobiKV considers all edge servers and chooses an executor using cache, network, GPU queue, and decode-stall costs. When useful, one helper computes the front of the new input and streams its KV states layer by layer to the executor, which computes the back. A helper with a missing prefix first receives the required prefix state. Prefill can also run on the executor alone. Between turns, idle links refresh one nearby replica without GPU work.</desc>
+  <defs>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 1 1 L 9 5 L 1 9 Z" fill="#3d74b5"/>
+    </marker>
+    <marker id="arrow-teal" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 1 1 L 9 5 L 1 9 Z" fill="#168a75"/>
+    </marker>
+    <marker id="arrow-muted" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 1 1 L 9 5 L 1 9 Z" fill="#9cabbc"/>
+    </marker>
+    <style>
+      text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; fill: #172e48; }
+      .headline { font-size: 29px; font-weight: 700; letter-spacing: -0.5px; }
+      .subtitle { font-size: 20px; fill: #52677d; }
+      .step { font-size: 20px; font-weight: 700; text-anchor: middle; }
+      .heading { font-size: 24px; font-weight: 700; letter-spacing: -0.45px; }
+      .body { font-size: 19px; fill: #52677d; }
+      .label { font-size: 21px; font-weight: 600; text-anchor: middle; }
+      .small { font-size: 18px; }
+      .blue { fill: #215fa9; }
+      .teal { fill: #087862; }
+      .center { text-anchor: middle; }
+    </style>
+  </defs>
+
+  <rect width="400" height="1230" rx="18" fill="#f4f7fb"/>
+  <text class="headline" x="22" y="43">How MobiKV works</text>
+  <text class="subtitle" x="22" y="75">Serve each turn. Keep state ready.</text>
+
+  <g transform="translate(-6 12)">
+    <rect x="28" y="100" width="356" height="348" rx="16" fill="#ffffff" stroke="#dce5ef"/>
+  <!-- Each turn can be assigned to any server, not just the current cache owner. -->
+  <circle cx="61" cy="136" r="17" fill="#e6eefb"/>
+  <text class="step blue" x="61" y="143">1</text>
+  <text class="heading" x="88" y="144">Choose an executor</text>
+  <text class="body" x="52" y="174">Consider every edge server</text>
+
+  <rect x="117" y="194" width="178" height="43" rx="11" fill="#f3f6fa" stroke="#d4dfea"/>
+  <rect x="133" y="204" width="14" height="23" rx="3" fill="none" stroke="#52677d" stroke-width="1.8"/>
+  <path d="M 137 223 H 143" stroke="#52677d" stroke-width="1.4"/>
+  <text class="label small" x="218" y="221">Mobile session</text>
+  <path d="M 206 237 V 255 H 102 V 268 M 206 255 H 310 V 268" fill="none" stroke="#bccada" stroke-width="2"/>
+  <path d="M 206 237 V 268" fill="none" stroke="#3d74b5" stroke-width="2.5" marker-end="url(#arrow-blue)"/>
+
+  <g aria-label="Three example candidate servers; the middle one is selected">
+    <rect x="60" y="274" width="84" height="60" rx="9" fill="#f5f7fa" stroke="#ccd8e5"/>
+    <rect x="164" y="274" width="84" height="60" rx="9" fill="#e8f0fc" stroke="#4b80c0" stroke-width="2"/>
+    <rect x="268" y="274" width="84" height="60" rx="9" fill="#f5f7fa" stroke="#ccd8e5"/>
+    <text class="label small" x="102" y="299">Server</text>
+    <text class="label small blue" x="206" y="299">Server</text>
+    <text class="label small" x="310" y="299">Server</text>
+    <rect x="74" y="311" width="26" height="8" rx="2" fill="#b6c5d7"/>
+    <rect x="104" y="311" width="26" height="8" rx="2" fill="#dce5ee"/>
+    <rect x="178" y="311" width="26" height="8" rx="2" fill="#4b80c0"/>
+    <rect x="208" y="311" width="26" height="8" rx="2" fill="#8fb0d9"/>
+    <rect x="282" y="311" width="26" height="8" rx="2" fill="#b6c5d7"/>
+    <rect x="312" y="311" width="26" height="8" rx="2" fill="#dce5ee"/>
+  </g>
+  <text class="label small blue" x="206" y="358">Selected executor</text>
+  <text class="body center" x="206" y="396">Cache · links · GPU queues</text>
+  <text class="body center" x="206" y="423">Account for decode stalls</text>
+
+  </g>
+  <path d="M 200 465 V 479" stroke="#9cabbc" stroke-width="2" marker-end="url(#arrow-muted)"/>
+
+  <g transform="translate(-400 386)">
+    <rect x="422" y="100" width="356" height="348" rx="16" fill="#ffffff" stroke="#dce5ef"/>
+  <!-- Parallel prefill is optional; at most one helper handles the new-input front. -->
+  <circle cx="455" cy="136" r="17" fill="#e1f3ec"/>
+  <text class="step teal" x="455" y="143">2</text>
+  <text class="heading" x="482" y="144">Share prefill work</text>
+  <text class="body" x="446" y="174">Use one helper when beneficial</text>
+
+  <rect x="450" y="207" width="136" height="46" rx="10" fill="#e6f5ee" stroke="#90c4b0"/>
+  <rect x="614" y="207" width="136" height="46" rx="10" fill="#e8f0fc" stroke="#98b5dc"/>
+  <text class="label teal" x="518" y="237">Helper</text>
+  <text class="label blue" x="682" y="237">Executor</text>
+  <path d="M 518 253 V 274" stroke="#168a75" stroke-width="2" marker-end="url(#arrow-teal)"/>
+  <path d="M 682 253 V 274" stroke="#3d74b5" stroke-width="2" marker-end="url(#arrow-blue)"/>
+
+  <rect x="450" y="280" width="136" height="43" rx="8" fill="#f0faf5" stroke="#b2d8c9"/>
+  <rect x="614" y="280" width="136" height="43" rx="8" fill="#f2f6fd" stroke="#c0d2ea"/>
+  <text class="label small teal" x="518" y="307">Front tokens</text>
+  <text class="label small blue" x="682" y="307">Back tokens</text>
+  <path d="M 586 301 H 610" stroke="#168a75" stroke-width="2.5" marker-end="url(#arrow-teal)"/>
+  <text class="label small teal" x="600" y="358">Stream KV layer by layer</text>
+  <text class="body center small" x="600" y="396">Repair a missing prefix first.</text>
+  <text class="body center small" x="600" y="423">Or run prefill on the executor alone.</text>
+
+  </g>
+  <path d="M 200 839 V 853" stroke="#9cabbc" stroke-width="2" marker-end="url(#arrow-muted)"/>
+
+  <g transform="translate(-794 760)">
+    <rect x="816" y="100" width="356" height="348" rx="16" fill="#ffffff" stroke="#dce5ef"/>
+  <!-- Refresh transfers state only; it does not schedule a GPU recomputation. -->
+  <circle cx="849" cy="136" r="17" fill="#e1f3ec"/>
+  <text class="step teal" x="849" y="143">3</text>
+  <text class="heading" x="876" y="144">Refresh the replica</text>
+  <text class="body" x="840" y="174">Use idle links between turns</text>
+
+  <rect x="844" y="207" width="300" height="62" rx="11" fill="#eef4fd" stroke="#b5cbe7"/>
+  <rect x="862" y="221" width="30" height="13" rx="3" fill="#d6e5f8" stroke="#709acb"/>
+  <rect x="862" y="239" width="30" height="13" rx="3" fill="#d6e5f8" stroke="#709acb"/>
+  <circle cx="885" cy="228" r="2" fill="#3d74b5"/>
+  <circle cx="885" cy="246" r="2" fill="#3d74b5"/>
+  <text class="label blue" x="1008" y="246">Executor</text>
+
+  <path d="M 994 270 V 329" stroke="#168a75" stroke-width="2.5" marker-end="url(#arrow-teal)"/>
+  <rect x="918" y="288" width="50" height="23" rx="5" fill="#dff2e9" stroke="#8dbfac"/>
+  <text class="label small teal" x="943" y="305">KV</text>
+  <text class="body small teal" x="1012" y="306">Transfer</text>
+
+  <rect x="844" y="336" width="300" height="62" rx="11" fill="#eff9f4" stroke="#b3d6c7"/>
+  <ellipse cx="877" cy="355" rx="16" ry="6" fill="#ceeadd" stroke="#75ac95"/>
+  <path d="M 861 355 V 377 C 861 385 893 385 893 377 V 355" fill="#dff2e9" stroke="#75ac95"/>
+  <path d="M 861 366 C 861 374 893 374 893 366" fill="none" stroke="#75ac95"/>
+  <ellipse cx="877" cy="355" rx="16" ry="6" fill="#ceeadd" stroke="#75ac95"/>
+  <text class="label teal" x="1008" y="375">One nearby replica</text>
+  <text class="body center" x="994" y="423">No GPU work for refresh</text>
+  </g>
+</svg>
