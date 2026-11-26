@@ -2,7 +2,7 @@
   "source": "final evaluation campaign, 2026-11-24",
   "algorithm": "SHA-256",
   "files": {
-    "docs/data/README.md": "ca5f0ef7859d8198974d82b15a4a509ab6cec484f0a9575e5028f784eb073817",
+    "docs/data/README.md": "3877546daacf8ddbb7d10283550d67b510eae2d7d8c1c8bee504bc6592610d93",
     "docs/data/aggregate/cross_model_constrained.csv": "8026d70a746e52bcd433ff49f16bdf0aa544a7920099328bd018d0f8dd9cb390",
     "docs/data/aggregate/cross_model_full_speed.csv": "8a8300407323c27e5e1bfa81be21dedd3de7596a8e06cf1893dc5e427e99c0dc",
     "docs/data/aggregate/cross_model_full_speed_slow_links.csv": "b04221aa86ac0aafa752de7485ea6f08eeef4e3c29881593412658cde28fdf3b",

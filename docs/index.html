@@ -84,7 +84,7 @@
           <section class="section" id="snapshot">
             <div class="section-head"><h2>Snapshot</h2></div>
             <div class="body-copy">
-              <p>MobiKV treats the KV cache as a schedulable distributed state. The scheduler tracks cache holders, transfer backlog, compute queues, and decode pressure, then chooses placement and repair actions using the observed compute-to-transfer ratio <span aria-label="rho sub s k">&#x03C1;<sub>sk</sub></span>.</p>
+              <p>MobiKV treats the KV cache as a schedulable distributed state. The scheduler tracks cache holders, transfer backlog, compute queues, and decode pressure, then chooses placement and repair actions using the measured transfer-to-recompute ratio <span aria-label="gamma">&gamma;</span>.</p>
             </div>
             <div class="table-block">
               <div class="table-label">Reported outcomes (final campaign, 2026-11-24)</div>
@@ -92,7 +92,7 @@
                 <thead><tr><th>Measurement</th><th>Reported outcome</th></tr></thead>
                 <tbody>
                   <tr><td>Cross-model simulation, full-speed point</td><td>8 models &times; 7 policies &times; 20 seeds; MobiKV has the lowest mean follow-up TTFT in 21 of the 24 TTFT cells, and its TPOT is within 7% of the best baseline in every cell</td></tr>
-                  <tr><td>Qwen3-8B simulator &rho; sweep</td><td>18 &rho; points &times; 7 policies &times; 20 seeds on full-speed A800 cost profiles; MobiKV's P90 follow-up TTFT is 0.55&ndash;0.80 of the best baseline at every point</td></tr>
+                  <tr><td>Qwen3-8B simulator <span aria-label="gamma sub 8k">&gamma;<sub>8k</sub></span> sweep</td><td>18 values of <span aria-label="gamma sub 8k">&gamma;<sub>8k</sub></span> &times; 7 policies &times; 20 seeds on full-speed A800 cost profiles; MobiKV's P90 follow-up TTFT is 0.55&ndash;0.80 of the best baseline at every point</td></tr>
                   <tr><td>RPP on two A800 GPUs</td><td>78 configurations of five models; the speedup reaches 82&ndash;94% of the bound in the 54 configurations with a measured link rate and is 1.78&ndash;1.86&times; for &rho; &lt; 1; the final logits are bitwise identical to chunked prefill in all 510 splits</td></tr>
                   <tr><td>Replay on three A800 GPUs (Qwen3-8B, constrained point)</td><td>Seven policies, seeds 41&ndash;43 pooled; MobiKV's follow-up TTFT is 0.18 / 2.24 / 7.61 s at P50 / P90 / P99, against 0.30&ndash;0.40 / 4.83&ndash;7.44 / 14.5&ndash;17.7 s for the four load-aware baselines; no send errors or timeouts</td></tr>
                 </tbody>
@@ -108,13 +108,13 @@
             </div>
             <div class="essay-grid">
               <div><h3>Cache-aware placement</h3><p>Place a continuation on a worker that already holds the required KV state when queueing and link conditions make reuse beneficial.</p></div>
-              <div><h3>Ratio-guided repair</h3><p>Compare transfer and recomputation using <span aria-label="rho sub s k">&#x03C1;<sub>sk</sub></span> and retain the lower-cost repair path for each cache segment.</p></div>
+              <div><h3>Ratio-guided repair</h3><p>Compare transfer and recomputation using <span aria-label="gamma">&gamma;</span> and retain the lower-cost repair path for each cache segment.</p></div>
               <div><h3>Replica-assisted prefill</h3><p>Split a long prefill across a replica holder and the executor, streaming layer KV as it becomes available.</p></div>
               <div><h3>Decode-first replay</h3><p>Give active decode work priority over background replica refresh so repaired state does not increase token-time variance.</p></div>
             </div>
             <figure class="figure-block">
-              <img class="figure-media" src="./assets/rho-sweep.svg" width="1200" height="410" alt="Three panels (P50, P90, P99) of follow-up TTFT against the transfer-to-compute ratio for MobiKV and six baselines; MobiKV is lowest in every panel." loading="lazy" decoding="async" />
-              <figcaption class="figure-caption">Figure 2. Follow-up TTFT against the transfer-to-compute ratio <span aria-label="rho sub 8k">&#x03C1;<sub>8k</sub></span> for Qwen3-8B on full-speed A800 servers; the ratio is varied through the link rate. Lines are means over 20 mobility seeds and bands show &plusmn; one sample standard deviation. The dashed line marks <span aria-label="rho sub 8k equals 1">&#x03C1;<sub>8k</sub> = 1</span>.</figcaption>
+              <img class="figure-media" src="./assets/rho-sweep.svg?v=2" width="1200" height="410" alt="Three panels (P50, P90, P99) of follow-up TTFT against the transfer-to-recompute ratio for MobiKV and six baselines; MobiKV is lowest in every panel." loading="lazy" decoding="async" />
+              <figcaption class="figure-caption">Figure 2. Follow-up TTFT against the transfer-to-recompute ratio <span aria-label="gamma sub 8k">&gamma;<sub>8k</sub></span> for Qwen3-8B on full-speed A800 servers; <span aria-label="gamma sub 8k">&gamma;<sub>8k</sub></span> is varied through the link rate. Lines are means over 20 mobility seeds and bands show &plusmn; one sample standard deviation. The dashed line marks <span aria-label="gamma sub 8k equals 1">&gamma;<sub>8k</sub> = 1</span>.</figcaption>
             </figure>
           </section>
 

@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Plot follow-up TTFT against the transfer-to-compute ratio for the project page.
+"""Plot follow-up TTFT against the transfer-to-recompute ratio.
 
 Reads the released aggregate (per policy and ratio: the mean over mobility seeds and
-the mean minus/plus one sample standard deviation) and writes ``rho-sweep.svg`` and ``rho-sweep.png``. Requires matplotlib
+the mean minus/plus one sample standard deviation) and writes ``rho-sweep.svg`` and ``rho-sweep.png`` for the project page, or, with ``--paper``,
+a PDF at the printed width of a two-column figure. Requires matplotlib
 (``pip install -e ".[plot]"``).
 """
 
@@ -57,25 +58,30 @@ def main() -> None:
         "--data", type=Path, default=ROOT / "docs/data/aggregate/rho_sweep_qwen3_a800.csv"
     )
     parser.add_argument("--out", type=Path, default=ROOT / "docs/assets/rho-sweep")
+    parser.add_argument("--paper", action="store_true", help="write a PDF at print size")
     args = parser.parse_args()
     data = load(args.data)
+    # Print size: 7.16 in wide (the text width of a two-column IEEE page) with 8 pt text.
+    size, base = ((7.16, 2.55), 8.0) if args.paper else ((12.0, 4.1), 12.0)
+    k = base / 12.0
 
     plt.rcParams.update(
         {
             "font.family": "serif",
             "font.serif": ["Times New Roman", "Times", "Nimbus Roman", "STIXGeneral"],
             "mathtext.fontset": "stix",
-            "font.size": 12,
+            "font.size": base,
             "axes.edgecolor": "#AEB6C2",
-            "axes.linewidth": 0.8,
+            "axes.linewidth": 0.8 * k**0.5,
             "axes.labelcolor": INK,
             "text.color": INK,
             "xtick.color": INK,
             "ytick.color": INK,
             "svg.fonttype": "path",
+            "pdf.fonttype": 42,
         }
     )
-    fig, axes = plt.subplots(1, 3, figsize=(12.0, 4.1), constrained_layout=True)
+    fig, axes = plt.subplots(1, 3, figsize=size, constrained_layout=True)
     handles = []
     for ax, (metric, title) in zip(axes, METRICS, strict=True):
         lo, hi = float("inf"), 0.0
@@ -91,7 +97,7 @@ def main() -> None:
                 x,
                 mean,
                 color=colour,
-                linewidth=1.7 if own else 1.1,
+                linewidth=(1.7 if own else 1.1) * k**0.5,
                 zorder=4 if own else 3,
                 label=label,
                 solid_capstyle="round",
@@ -106,20 +112,20 @@ def main() -> None:
         ax.yaxis.set_major_locator(LogLocator(base=10, subs=(1.0, 2.0, 5.0)))
         ax.yaxis.set_major_formatter(FuncFormatter(plain))
         ax.yaxis.set_minor_formatter(NullFormatter())
-        ax.grid(True, which="major", color="#E3E7EE", linewidth=0.7, zorder=0)
-        ax.axvline(1, color="#8B95A3", linewidth=0.8, linestyle=(0, (4, 3)), zorder=1)
+        ax.grid(True, which="major", color="#E3E7EE", linewidth=0.7 * k**0.5, zorder=0)
+        ax.axvline(1, color="#8B95A3", linewidth=0.8 * k**0.5, linestyle=(0, (4, 3)), zorder=1)
         ax.annotate(
-            r"$\rho_{8k}=1$",
+            r"$\gamma_{8k}=1$",
             xy=(1, 1),
             xycoords=("data", "axes fraction"),
-            xytext=(5, -13),
+            xytext=(5 * k, -13 * k),
             textcoords="offset points",
-            fontsize=10.5,
+            fontsize=10.5 * k,
             color="#6B7685",
         )
-        ax.set_title(title, fontsize=13.5, fontweight="bold", pad=8)
-        ax.set_xlabel(r"Transfer-to-compute ratio $\rho_{8k}$")
-        ax.tick_params(length=3, width=0.8)
+        ax.set_title(title, fontsize=13.5 * k, fontweight="bold", pad=8 * k)
+        ax.set_xlabel(r"Transfer-to-recompute ratio $\gamma_{8k}$")
+        ax.tick_params(length=3 * k, width=0.8 * k**0.5)
         for side in ("top", "right"):
             ax.spines[side].set_visible(False)
     axes[0].set_ylabel("Follow-up TTFT (s)")
@@ -128,10 +134,14 @@ def main() -> None:
         loc="outside upper center",
         ncols=len(POLICIES),
         frameon=False,
-        fontsize=11.5,
+        fontsize=11.5 * k,
         handlelength=1.8,
         columnspacing=1.8,
     )
+    if args.paper:
+        fig.savefig(args.out.with_suffix(".pdf"), facecolor="white")
+        print(f"wrote {args.out}.pdf")
+        return
     fig.savefig(args.out.with_suffix(".svg"), facecolor="white")
     fig.savefig(args.out.with_suffix(".png"), facecolor="white", dpi=200)
     print(f"wrote {args.out}.svg and {args.out}.png")

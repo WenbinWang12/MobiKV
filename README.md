@@ -10,7 +10,7 @@ MobiKV is a research artifact for scheduling multi-turn LLM sessions across mobi
 
 - separate the user's access edge from the executor;
 - keep one secondary KV replica and refresh it during think time;
-- repair missing KV using the measured transfer-to-compute ratio `rho`; and
+- repair missing KV using the measured transfer-to-recompute ratio `gamma`; and
 - use replica-assisted parallel prefill (RPP) when a helper can compute the front of a long turn while the executor computes the back.
 
 Decode-first background replay gives foreground decoding priority while a replica is refreshed. The simulator is trace driven and models GPU queues, KV stores, links, foreground prefill, decoding, background replication, mobility, failures, heterogeneous links, and the RPP pipeline. The real-GPU programs measure the cost model and replay planned job streams with layer-wise RPP and batched decoding.
@@ -20,7 +20,7 @@ Decode-first background replay gives foreground decoding priority while a replic
 The numbers below come from the final evaluation campaign (2026-11-24); the aggregates are under [`docs/data`](docs/data/). Simulations use cost profiles measured on NVIDIA A800 80GB GPUs and 20 mobility seeds.
 
 - **Cross-model simulation.** Eight models and seven policies at the full-speed point (one A800 per server, 10 Gb/s links): MobiKV has the lowest mean follow-up TTFT in 21 of the 24 TTFT cells, and its TPOT is within 7% of the best baseline in every cell.
-- **Ratio sweep.** Qwen3-8B over 18 values of the transfer-to-compute ratio: MobiKV's P90 follow-up TTFT is 0.55-0.80 of the best baseline at every point.
+- **Ratio sweep.** Qwen3-8B over 18 values of the transfer-to-recompute ratio: MobiKV's P90 follow-up TTFT is 0.55-0.80 of the best baseline at every point.
 - **RPP on two GPUs.** 78 configurations of five models: the speedup reaches 82-94% of the bound in the 54 configurations with a measured link rate, and the final logits are bitwise identical to chunked prefill in all 510 splits.
 - **Replay on three GPUs.** Qwen3-8B at the constrained point, seven policies, seeds 41-43: MobiKV's follow-up TTFT is 0.18, 2.24, and 7.61 s at P50, P90, and P99, against 0.30-0.40, 4.83-7.44, and 14.5-17.7 s for the four load-aware baselines.
 
