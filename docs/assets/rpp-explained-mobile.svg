@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="480" viewBox="0 0 400 480" role="img" aria-labelledby="rpp-mobile-title rpp-mobile-desc">
+  <title id="rpp-mobile-title">Replica-assisted parallel prefill</title>
+  <desc id="rpp-mobile-desc">Both GPUs already cache the prefix. Split the new input into front tokens for the helper and back tokens for the executor. Read each GPU lane downwards through three layers. The helper sends new front KV across to the corresponding executor layer; that back layer waits for its front KV. Later helper layers can overlap earlier executor layers. Schematic, not measured timing.</desc>
+  <defs>
+    <marker id="rppm-kv-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 1 1 L 9 5 L 1 9 Z" fill="#168a75"/>
+    </marker>
+    <marker id="rppm-front-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 1 1 L 9 5 L 1 9 Z" fill="#83b9a7"/>
+    </marker>
+    <marker id="rppm-back-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 1 1 L 9 5 L 1 9 Z" fill="#8faed7"/>
+    </marker>
+    <style>
+      text { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #172e48; font-size: 18px; }
+      .title { font-size: 24px; font-weight: 700; letter-spacing: -0.4px; }
+      .muted { fill: #566b80; }
+      .helper { fill: #087862; }
+      .executor { fill: #215fa9; }
+      .label { font-weight: 650; }
+      .cell { text-anchor: middle; font-weight: 600; }
+      .note { font-size: 16px; }
+    </style>
+  </defs>
+
+  <rect width="400" height="480" fill="#ffffff"/>
+  <text class="title" x="18" y="31">Replica-assisted</text>
+  <text class="title" x="18" y="59">parallel prefill</text>
+  <text class="muted" x="18" y="85">Prefix KV cached on both GPUs</text>
+
+  <text class="label" x="18" y="113">Split the new input</text>
+  <rect x="18" y="124" width="146" height="35" rx="7" fill="#e5f5ef"/>
+  <rect x="168" y="124" width="214" height="35" rx="7" fill="#e8f0fc"/>
+  <text class="helper label" x="91" y="148" text-anchor="middle">FRONT</text>
+  <text class="executor label" x="275" y="148" text-anchor="middle">BACK</text>
+
+  <text class="helper label" x="91" y="187" text-anchor="middle">Helper GPU</text>
+  <text class="executor label" x="307" y="187" text-anchor="middle">Executor GPU</text>
+  <rect x="18" y="198" width="146" height="228" rx="11" fill="#f3faf7"/>
+  <rect x="234" y="198" width="148" height="228" rx="11" fill="#f3f7fd"/>
+
+  <!-- Layers progress downward. The offset back blocks show the dependency. -->
+  <g aria-label="Helper front layers">
+    <path d="M 91 254 V 274" fill="none" stroke="#83b9a7" stroke-width="2" marker-end="url(#rppm-front-arrow)"/>
+    <path d="M 91 324 V 344" fill="none" stroke="#83b9a7" stroke-width="2" marker-end="url(#rppm-front-arrow)"/>
+    <rect x="28" y="212" width="126" height="42" rx="7" fill="#d9f0e7" stroke="#83b9a7"/>
+    <rect x="28" y="282" width="126" height="42" rx="7" fill="#d9f0e7" stroke="#83b9a7"/>
+    <rect x="28" y="352" width="126" height="42" rx="7" fill="#d9f0e7" stroke="#83b9a7"/>
+    <text class="cell helper" x="91" y="240">Front · L1</text>
+    <text class="cell helper" x="91" y="310">Front · L2</text>
+    <text class="cell helper" x="91" y="380">Front · L3</text>
+  </g>
+
+  <!-- New front KV must arrive before the corresponding back layer runs. -->
+  <g aria-label="New KV for each matching layer">
+    <path d="M 155 234 L 242 253" fill="none" stroke="#168a75" stroke-width="2.3" marker-end="url(#rppm-kv-arrow)"/>
+    <path d="M 155 304 L 242 323" fill="none" stroke="#168a75" stroke-width="2.3" marker-end="url(#rppm-kv-arrow)"/>
+    <path d="M 155 374 L 242 393" fill="none" stroke="#168a75" stroke-width="2.3" marker-end="url(#rppm-kv-arrow)"/>
+    <text class="helper note label" x="199" y="229" text-anchor="middle">New KV</text>
+    <text class="helper note label" x="199" y="299" text-anchor="middle">New KV</text>
+    <text class="helper note label" x="199" y="369" text-anchor="middle">New KV</text>
+  </g>
+
+  <g aria-label="Executor back layers">
+    <path d="M 308 274 V 294" fill="none" stroke="#8faed7" stroke-width="2" marker-end="url(#rppm-back-arrow)"/>
+    <path d="M 308 344 V 364" fill="none" stroke="#8faed7" stroke-width="2" marker-end="url(#rppm-back-arrow)"/>
+    <rect x="244" y="232" width="128" height="42" rx="7" fill="#deebfc" stroke="#8faed7"/>
+    <rect x="244" y="302" width="128" height="42" rx="7" fill="#deebfc" stroke="#8faed7"/>
+    <rect x="244" y="372" width="128" height="42" rx="7" fill="#deebfc" stroke="#8faed7"/>
+    <text class="cell executor" x="308" y="260">Back · L1</text>
+    <text class="cell executor" x="308" y="330">Back · L2</text>
+    <text class="cell executor" x="308" y="400">Back · L3</text>
+  </g>
+
+  <text class="note" x="18" y="449">Each back layer needs its front KV.</text>
+  <text class="note muted" x="18" y="472">Schematic · not measured timing</text>
+</svg>

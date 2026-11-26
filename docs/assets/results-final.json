@@ -1,0 +1,1102 @@
+{
+  "schemaVersion": 1,
+  "datasetVersion": "final_20261124",
+  "percentiles": [
+    "p50",
+    "p90",
+    "p99"
+  ],
+  "confidenceLevel": 0.95,
+  "metricLabels": {
+    "ttft": "TTFT",
+    "tpot": "Time per output token"
+  },
+  "replay": {
+    "title": "Replay on three real GPUs",
+    "conditions": {
+      "model": "Qwen3-8B",
+      "operatingPoint": "constrained",
+      "gpu": "NVIDIA A800 80GB",
+      "physicalGpuCount": 3,
+      "nodeCount": 1,
+      "processesPerGpu": 1,
+      "gpuShare": 0.25,
+      "gpuShareMechanism": "CUDA MPS",
+      "linkGbps": 0.93,
+      "linkMechanism": "application-level pacing",
+      "seeds": [
+        41,
+        42,
+        43
+      ],
+      "windowSeconds": [
+        2400,
+        3300
+      ],
+      "windowEndExclusive": true,
+      "requests": "Follow-up requests of evaluation-half sessions executed at the three servers; request sets differ between policies.",
+      "decoding": "Every request generates its full output."
+    },
+    "units": {
+      "ttft": "s",
+      "tpot": "ms",
+      "ratios": "dimensionless",
+      "simulatorErrorPercent": "%"
+    },
+    "statistic": "Percentiles pooled over requests across the three mobility seeds.",
+    "intervalMethod": "95% bootstrap intervals; requests are resampled within each seed. Ratio intervals resample each policy independently.",
+    "ratioDefinition": "MobiKV latency percentile divided by the baseline latency percentile; values below 1 favor MobiKV.",
+    "comparisonDefinition": "lower or higher means the 95% ratio interval lies entirely below or above 1; otherwise not-significant.",
+    "simulatorErrorDefinition": "100 times the median over requests of abs(measured TTFT - simulated TTFT) / simulated TTFT.",
+    "methods": [
+      {
+        "id": "follow_me_cloud",
+        "label": "Follow-Me",
+        "n": 308,
+        "nTpot": 308,
+        "ttft": {
+          "p50": {
+            "value": 12.889624779965061,
+            "ci": [
+              10.283451690888342,
+              16.736627696624282
+            ]
+          },
+          "p90": {
+            "value": 74.00317425434363,
+            "ci": [
+              59.13222376640033,
+              102.33412298587376
+            ]
+          },
+          "p99": {
+            "value": 189.5759312778555,
+            "ci": [
+              159.8447229642762,
+              203.714334829363
+            ]
+          }
+        },
+        "tpot": {
+          "p50": {
+            "value": 133.5960151618009,
+            "ci": [
+              116.46850370989145,
+              161.37278079986572
+            ]
+          },
+          "p90": {
+            "value": 492.5703656797708,
+            "ci": [
+              425.89485698751275,
+              642.7725315093994
+            ]
+          },
+          "p99": {
+            "value": 1547.8562411672426,
+            "ci": [
+              1102.6926289976034,
+              4236.785770562996
+            ]
+          }
+        },
+        "simulatorErrorPercent": 14.789908155347527,
+        "rppRequests": 0,
+        "perSeedCounts": [
+          {
+            "seed": 41,
+            "n": 102,
+            "nTpot": 102
+          },
+          {
+            "seed": 42,
+            "n": 95,
+            "nTpot": 95
+          },
+          {
+            "seed": 43,
+            "n": 111,
+            "nTpot": 111
+          }
+        ]
+      },
+      {
+        "id": "wang_ton19_mdp",
+        "label": "MDP",
+        "n": 301,
+        "nTpot": 301,
+        "ttft": {
+          "p50": {
+            "value": 9.780159621485836,
+            "ci": [
+              6.833193142280834,
+              13.045728190803402
+            ]
+          },
+          "p90": {
+            "value": 138.6216282967589,
+            "ci": [
+              111.82365014571678,
+              191.283241946026
+            ]
+          },
+          "p99": {
+            "value": 248.29398719283154,
+            "ci": [
+              237.42840877537537,
+              287.1356485515562
+            ]
+          }
+        },
+        "tpot": {
+          "p50": {
+            "value": 113.80616420093068,
+            "ci": [
+              99.60926624766567,
+              132.68829516086626
+            ]
+          },
+          "p90": {
+            "value": 404.7045606587614,
+            "ci": [
+              309.9694306200201,
+              501.19666631709146
+            ]
+          },
+          "p99": {
+            "value": 1119.9308224988602,
+            "ci": [
+              713.5819325080284,
+              2919.2973375320435
+            ]
+          }
+        },
+        "simulatorErrorPercent": 18.227066323696956,
+        "rppRequests": 0,
+        "perSeedCounts": [
+          {
+            "seed": 41,
+            "n": 103,
+            "nTpot": 103
+          },
+          {
+            "seed": 42,
+            "n": 87,
+            "nTpot": 87
+          },
+          {
+            "seed": 43,
+            "n": 111,
+            "nTpot": 111
+          }
+        ]
+      },
+      {
+        "id": "ouyang_jsac18",
+        "label": "Lyapunov",
+        "n": 206,
+        "nTpot": 206,
+        "ttft": {
+          "p50": {
+            "value": 0.3972948999473829,
+            "ci": [
+              0.27813218598203093,
+              0.5513460665702041
+            ]
+          },
+          "p90": {
+            "value": 7.225157644867295,
+            "ci": [
+              4.36756354868362,
+              8.582823000947883
+            ]
+          },
+          "p99": {
+            "value": 16.804829083466597,
+            "ci": [
+              12.752068350341355,
+              20.687793968176234
+            ]
+          }
+        },
+        "tpot": {
+          "p50": {
+            "value": 35.02381050508786,
+            "ci": [
+              34.176760099396596,
+              35.82539439201355
+            ]
+          },
+          "p90": {
+            "value": 50.4991324464294,
+            "ci": [
+              45.97981813413511,
+              57.523073202156155
+            ]
+          },
+          "p99": {
+            "value": 133.70412834600594,
+            "ci": [
+              80.4944573161758,
+              1162.7635265841525
+            ]
+          }
+        },
+        "simulatorErrorPercent": 7.602130575732108,
+        "rppRequests": 0,
+        "perSeedCounts": [
+          {
+            "seed": 41,
+            "n": 64,
+            "nTpot": 64
+          },
+          {
+            "seed": 42,
+            "n": 66,
+            "nTpot": 66
+          },
+          {
+            "seed": 43,
+            "n": 76,
+            "nTpot": 76
+          }
+        ]
+      },
+      {
+        "id": "preble_iclr25",
+        "label": "Preble",
+        "n": 244,
+        "nTpot": 244,
+        "ttft": {
+          "p50": {
+            "value": 0.295030762541046,
+            "ci": [
+              0.2100476732084644,
+              0.4005707315575364
+            ]
+          },
+          "p90": {
+            "value": 7.436736321212237,
+            "ci": [
+              5.246638382828955,
+              10.28732959694294
+            ]
+          },
+          "p99": {
+            "value": 17.683344825904378,
+            "ci": [
+              13.839134487166515,
+              22.921665326065686
+            ]
+          }
+        },
+        "tpot": {
+          "p50": {
+            "value": 37.0428615102615,
+            "ci": [
+              35.02560153788025,
+              39.72431994342559
+            ]
+          },
+          "p90": {
+            "value": 77.04794506930938,
+            "ci": [
+              67.99767717552895,
+              88.31629908980497
+            ]
+          },
+          "p99": {
+            "value": 127.41398532417656,
+            "ci": [
+              100.21860923992811,
+              214.68129843076397
+            ]
+          }
+        },
+        "simulatorErrorPercent": 13.758381724342298,
+        "rppRequests": 0,
+        "perSeedCounts": [
+          {
+            "seed": 41,
+            "n": 75,
+            "nTpot": 75
+          },
+          {
+            "seed": 42,
+            "n": 91,
+            "nTpot": 91
+          },
+          {
+            "seed": 43,
+            "n": 78,
+            "nTpot": 78
+          }
+        ]
+      },
+      {
+        "id": "mooncake_fast25",
+        "label": "Mooncake",
+        "n": 194,
+        "nTpot": 194,
+        "ttft": {
+          "p50": {
+            "value": 0.3433630635524878,
+            "ci": [
+              0.23421819362283713,
+              0.4173833746467608
+            ]
+          },
+          "p90": {
+            "value": 4.827627639047569,
+            "ci": [
+              3.3910188847631173,
+              5.601254031086139
+            ]
+          },
+          "p99": {
+            "value": 14.534526191671187,
+            "ci": [
+              10.418524655758574,
+              19.042868035266565
+            ]
+          }
+        },
+        "tpot": {
+          "p50": {
+            "value": 33.55750128475647,
+            "ci": [
+              32.642326846684696,
+              34.049314830617064
+            ]
+          },
+          "p90": {
+            "value": 46.24481396142268,
+            "ci": [
+              43.60165927744479,
+              54.84972014170309
+            ]
+          },
+          "p99": {
+            "value": 87.97034541562745,
+            "ci": [
+              62.82392082115014,
+              178.19200889973703
+            ]
+          }
+        },
+        "simulatorErrorPercent": 8.179889910230276,
+        "rppRequests": 0,
+        "perSeedCounts": [
+          {
+            "seed": 41,
+            "n": 69,
+            "nTpot": 69
+          },
+          {
+            "seed": 42,
+            "n": 65,
+            "nTpot": 65
+          },
+          {
+            "seed": 43,
+            "n": 60,
+            "nTpot": 60
+          }
+        ]
+      },
+      {
+        "id": "loongserve_sosp24",
+        "label": "ESP",
+        "n": 194,
+        "nTpot": 194,
+        "ttft": {
+          "p50": {
+            "value": 0.3752341566098494,
+            "ci": [
+              0.28533525785360325,
+              0.4666324923086904
+            ]
+          },
+          "p90": {
+            "value": 5.968032329424894,
+            "ci": [
+              4.214709508883516,
+              7.219065382446434
+            ]
+          },
+          "p99": {
+            "value": 16.64133331172612,
+            "ci": [
+              10.196210770371371,
+              19.440444913526335
+            ]
+          }
+        },
+        "tpot": {
+          "p50": {
+            "value": 33.85666475018458,
+            "ci": [
+              33.1533681835876,
+              34.54585504113582
+            ]
+          },
+          "p90": {
+            "value": 44.922982725530964,
+            "ci": [
+              42.52248864424856,
+              49.09249098201836
+            ]
+          },
+          "p99": {
+            "value": 73.495341971204,
+            "ci": [
+              56.034911912063066,
+              5964.72704410553
+            ]
+          }
+        },
+        "simulatorErrorPercent": 8.311908326549883,
+        "rppRequests": 1,
+        "perSeedCounts": [
+          {
+            "seed": 41,
+            "n": 70,
+            "nTpot": 70
+          },
+          {
+            "seed": 42,
+            "n": 61,
+            "nTpot": 61
+          },
+          {
+            "seed": 43,
+            "n": 63,
+            "nTpot": 63
+          }
+        ]
+      },
+      {
+        "id": "mobikv",
+        "label": "MobiKV",
+        "n": 314,
+        "nTpot": 313,
+        "ttft": {
+          "p50": {
+            "value": 0.17987851896441498,
+            "ci": [
+              0.1465315169925816,
+              0.20921635537297334
+            ]
+          },
+          "p90": {
+            "value": 2.2376056802871513,
+            "ci": [
+              1.5686055922305968,
+              3.0181314291340184
+            ]
+          },
+          "p99": {
+            "value": 7.612629302143259,
+            "ci": [
+              5.416817918052587,
+              18.302557598303338
+            ]
+          }
+        },
+        "tpot": {
+          "p50": {
+            "value": 33.92578998621363,
+            "ci": [
+              33.49818673523717,
+              34.3058324430968
+            ]
+          },
+          "p90": {
+            "value": 42.83783012336784,
+            "ci": [
+              39.05976096383054,
+              47.47420324194701
+            ]
+          },
+          "p99": {
+            "value": 70.32426098758891,
+            "ci": [
+              63.31404014869971,
+              114.8856444792314
+            ]
+          }
+        },
+        "simulatorErrorPercent": 8.830628592498108,
+        "rppRequests": 20,
+        "perSeedCounts": [
+          {
+            "seed": 41,
+            "n": 99,
+            "nTpot": 99
+          },
+          {
+            "seed": 42,
+            "n": 70,
+            "nTpot": 69
+          },
+          {
+            "seed": 43,
+            "n": 145,
+            "nTpot": 145
+          }
+        ]
+      }
+    ],
+    "ratiosToBaselines": [
+      {
+        "baselineId": "follow_me_cloud",
+        "baselineLabel": "Follow-Me",
+        "ttft": {
+          "p50": {
+            "value": 0.013955295211076158,
+            "ci": [
+              0.010125019236467749,
+              0.018355756236239997
+            ],
+            "comparison": "lower"
+          },
+          "p90": {
+            "value": 0.030236617588816666,
+            "ci": [
+              0.01863678928841176,
+              0.045791763706531104
+            ],
+            "comparison": "lower"
+          },
+          "p99": {
+            "value": 0.04015609603407759,
+            "ci": [
+              0.02871034039840317,
+              0.10547950646455491
+            ],
+            "comparison": "lower"
+          }
+        },
+        "tpot": {
+          "p50": {
+            "value": 0.25394312805756525,
+            "ci": [
+              0.21107324059449062,
+              0.2925917960706604
+            ],
+            "comparison": "lower"
+          },
+          "p90": {
+            "value": 0.08696794023377669,
+            "ci": [
+              0.06617610757277244,
+              0.10653775744517414
+            ],
+            "comparison": "lower"
+          },
+          "p99": {
+            "value": 0.04543332844305825,
+            "ci": [
+              0.022514483206090095,
+              0.09095624397281205
+            ],
+            "comparison": "lower"
+          }
+        }
+      },
+      {
+        "baselineId": "wang_ton19_mdp",
+        "baselineLabel": "MDP",
+        "ttft": {
+          "p50": {
+            "value": 0.018392186418843662,
+            "ci": [
+              0.012495677650386715,
+              0.027974870312622305
+            ],
+            "comparison": "lower"
+          },
+          "p90": {
+            "value": 0.016141822223419002,
+            "ci": [
+              0.010081123922546766,
+              0.02421563637750695
+            ],
+            "comparison": "lower"
+          },
+          "p99": {
+            "value": 0.030659740850796736,
+            "ci": [
+              0.020746961661273124,
+              0.07412672517449062
+            ],
+            "comparison": "lower"
+          }
+        },
+        "tpot": {
+          "p50": {
+            "value": 0.2981015151895981,
+            "ci": [
+              0.25509351051813883,
+              0.3419800926151377
+            ],
+            "comparison": "lower"
+          },
+          "p90": {
+            "value": 0.10584963523425134,
+            "ci": [
+              0.08117179848203286,
+              0.14403300765170227
+            ],
+            "comparison": "lower"
+          },
+          "p99": {
+            "value": 0.06279339721240727,
+            "ci": [
+              0.022434532935764535,
+              0.1276444251894153
+            ],
+            "comparison": "lower"
+          }
+        }
+      },
+      {
+        "baselineId": "ouyang_jsac18",
+        "baselineLabel": "Lyapunov",
+        "ttft": {
+          "p50": {
+            "value": 0.45275818790585487,
+            "ci": [
+              0.32083357669397716,
+              0.6896406261396233
+            ],
+            "comparison": "lower"
+          },
+          "p90": {
+            "value": 0.3096964509662612,
+            "ci": [
+              0.20535942985204092,
+              0.5548109732262387
+            ],
+            "comparison": "lower"
+          },
+          "p99": {
+            "value": 0.45300248305607177,
+            "ci": [
+              0.3026617751469857,
+              1.1027353924702024
+            ],
+            "comparison": "not-significant"
+          }
+        },
+        "tpot": {
+          "p50": {
+            "value": 0.9686493130519102,
+            "ci": [
+              0.9452229165803886,
+              0.9952156715725354
+            ],
+            "comparison": "lower"
+          },
+          "p90": {
+            "value": 0.8482884368124771,
+            "ci": [
+              0.7158772292222513,
+              0.974841968337868
+            ],
+            "comparison": "lower"
+          },
+          "p99": {
+            "value": 0.5259692565782293,
+            "ci": [
+              0.058331109576388596,
+              1.0837051643920894
+            ],
+            "comparison": "not-significant"
+          }
+        }
+      },
+      {
+        "baselineId": "preble_iclr25",
+        "baselineLabel": "Preble",
+        "ttft": {
+          "p50": {
+            "value": 0.6096941126245758,
+            "ci": [
+              0.4259737406075374,
+              0.8779546289710131
+            ],
+            "comparison": "lower"
+          },
+          "p90": {
+            "value": 0.30088544001549417,
+            "ci": [
+              0.18436268869157998,
+              0.5013760110368448
+            ],
+            "comparison": "lower"
+          },
+          "p99": {
+            "value": 0.43049713598252626,
+            "ci": [
+              0.2824247902587435,
+              1.1774736291493946
+            ],
+            "comparison": "not-significant"
+          }
+        },
+        "tpot": {
+          "p50": {
+            "value": 0.9158523019830854,
+            "ci": [
+              0.8563542914953747,
+              0.9704684539953479
+            ],
+            "comparison": "lower"
+          },
+          "p90": {
+            "value": 0.5559892620735384,
+            "ci": [
+              0.46312792226117255,
+              0.6530176469109394
+            ],
+            "comparison": "lower"
+          },
+          "p99": {
+            "value": 0.5519351804958025,
+            "ci": [
+              0.3133820517670729,
+              1.0325362443468409
+            ],
+            "comparison": "not-significant"
+          }
+        }
+      },
+      {
+        "baselineId": "mooncake_fast25",
+        "baselineLabel": "Mooncake",
+        "ttft": {
+          "p50": {
+            "value": 0.5238726527639979,
+            "ci": [
+              0.3906953654192305,
+              0.8102954526458079
+            ],
+            "comparison": "lower"
+          },
+          "p90": {
+            "value": 0.46350005584287424,
+            "ci": [
+              0.29524070720351786,
+              0.7819603323472523
+            ],
+            "comparison": "lower"
+          },
+          "p99": {
+            "value": 0.5237617794865286,
+            "ci": [
+              0.3288057468385263,
+              1.4273368556696249
+            ],
+            "comparison": "not-significant"
+          }
+        },
+        "tpot": {
+          "p50": {
+            "value": 1.0109748547227042,
+            "ci": [
+              0.9900598138802348,
+              1.0409663007126795
+            ],
+            "comparison": "not-significant"
+          },
+          "p90": {
+            "value": 0.9263272236126425,
+            "ci": [
+              0.7687645846871134,
+              1.0508224446906407
+            ],
+            "comparison": "not-significant"
+          },
+          "p99": {
+            "value": 0.799408717282315,
+            "ci": [
+              0.37757797810255644,
+              1.6289913834907817
+            ],
+            "comparison": "not-significant"
+          }
+        }
+      },
+      {
+        "baselineId": "loongserve_sosp24",
+        "baselineLabel": "ESP",
+        "ttft": {
+          "p50": {
+            "value": 0.47937671929862213,
+            "ci": [
+              0.35910463002203313,
+              0.6683512658090912
+            ],
+            "comparison": "lower"
+          },
+          "p90": {
+            "value": 0.3749318966076675,
+            "ci": [
+              0.23876463720748947,
+              0.6199778001583706
+            ],
+            "comparison": "lower"
+          },
+          "p99": {
+            "value": 0.45745308741452273,
+            "ci": [
+              0.320820688867248,
+              1.3759819237492124
+            ],
+            "comparison": "not-significant"
+          }
+        },
+        "tpot": {
+          "p50": {
+            "value": 1.0020417024694872,
+            "ci": [
+              0.9765077018411042,
+              1.027182003831259
+            ],
+            "comparison": "not-significant"
+          },
+          "p90": {
+            "value": 0.9535838344728148,
+            "ci": [
+              0.8305330837828427,
+              1.0727677455906897
+            ],
+            "comparison": "not-significant"
+          },
+          "p99": {
+            "value": 0.9568533066373439,
+            "ci": [
+              0.011279875497552622,
+              1.8953930926727922
+            ],
+            "comparison": "not-significant"
+          }
+        }
+      }
+    ],
+    "provenance": {
+      "canonicalSource": {
+        "name": "final_20261124/out_20261123/replay_pool.json",
+        "sha256": "40ffcfcfcca7586f0a2a88b81dad326737454d2f59717bb38aaa947c5db360a3"
+      },
+      "publishedAggregate": "docs/data/aggregate/replay_three_gpu_pooled.csv",
+      "publishedAdditionalStatistics": "docs/data/aggregate/replay_three_gpu.csv",
+      "verification": "All 42 pooled latency rows and their interval endpoints match replay_three_gpu_pooled.csv at its published four-decimal precision. Exact ratios and their intervals come from the canonical JSON; they are not reconstructed from the rounded CSV."
+    }
+  },
+  "fullSpeedP90": {
+    "title": "P90 TTFT across six standard-attention models",
+    "conditions": {
+      "evaluation": "simulation with measured GPU costs",
+      "operatingPoint": "full-speed",
+      "gpu": "NVIDIA A800 80GB",
+      "gpuSharePerServer": 1,
+      "linkGbps": 10,
+      "seeds": [
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60
+      ],
+      "requests": "Follow-up requests of evaluation-half sessions.",
+      "modelScope": "Six standard-attention models; hybrid-attention models are excluded from this comparison."
+    },
+    "metric": "ttft",
+    "percentile": "p90",
+    "units": {
+      "latency": "s",
+      "ratio": "dimensionless",
+      "reductionPercent": "%"
+    },
+    "statistic": "Mean of paired per-seed MobiKV/baseline latency ratios, with a 95% t interval over 20 mobility seeds.",
+    "baselineSelection": "For each model and metric, select the baseline with the lowest mean across seeds. ESP is the selected baseline for P90 TTFT in all six models.",
+    "ratioDefinition": "Ratios below 1 favor MobiKV. Reduction percent is 100 * (1 - ratio). The mean paired ratio need not equal the ratio of the aggregate means.",
+    "models": [
+      {
+        "model": "Qwen2.5-7B",
+        "baselineId": "loongserve_sosp24",
+        "baselineLabel": "ESP",
+        "nSeeds": 20,
+        "loadFactor": 1,
+        "gamma8k": 0.5637993802835931,
+        "ratio": {
+          "value": 0.7286096791684196,
+          "ci": [
+            0.7206956895610699,
+            0.7365236687757692
+          ],
+          "comparison": "lower"
+        },
+        "reductionPercent": {
+          "value": 27.139032083158042,
+          "ci": [
+            26.347633122423076,
+            27.930431043893012
+          ]
+        },
+        "mobikvMeanSeconds": 0.4733970000000001,
+        "baselineMeanSeconds": 0.6498865000000001
+      },
+      {
+        "model": "Qwen2.5-14B",
+        "baselineId": "loongserve_sosp24",
+        "baselineLabel": "ESP",
+        "nSeeds": 20,
+        "loadFactor": 1,
+        "gamma8k": 0.9484049802937835,
+        "ratio": {
+          "value": 0.6064427953059831,
+          "ci": [
+            0.5922230747399813,
+            0.620662515871985
+          ],
+          "comparison": "lower"
+        },
+        "reductionPercent": {
+          "value": 39.35572046940169,
+          "ci": [
+            37.933748412801506,
+            40.77769252600187
+          ]
+        },
+        "mobikvMeanSeconds": 1.4434290000000003,
+        "baselineMeanSeconds": 2.3819775000000005
+      },
+      {
+        "model": "Qwen3-8B",
+        "baselineId": "loongserve_sosp24",
+        "baselineLabel": "ESP",
+        "nSeeds": 20,
+        "loadFactor": 1,
+        "gamma8k": 1.2289646707453727,
+        "ratio": {
+          "value": 0.585343789376723,
+          "ci": [
+            0.5736990036084105,
+            0.5969885751450356
+          ],
+          "comparison": "lower"
+        },
+        "reductionPercent": {
+          "value": 41.4656210623277,
+          "ci": [
+            40.30114248549644,
+            42.63009963915895
+          ]
+        },
+        "mobikvMeanSeconds": 0.7425775000000002,
+        "baselineMeanSeconds": 1.2690880000000002
+      },
+      {
+        "model": "Llama-3.1-8B",
+        "baselineId": "loongserve_sosp24",
+        "baselineLabel": "ESP",
+        "nSeeds": 20,
+        "loadFactor": 1,
+        "gamma8k": 1.1840417932052707,
+        "ratio": {
+          "value": 0.5787182444248176,
+          "ci": [
+            0.5701091054202525,
+            0.5873273834293826
+          ],
+          "comparison": "lower"
+        },
+        "reductionPercent": {
+          "value": 42.12817555751825,
+          "ci": [
+            41.26726165706174,
+            42.98908945797475
+          ]
+        },
+        "mobikvMeanSeconds": 0.5867025000000002,
+        "baselineMeanSeconds": 1.0140055000000001
+      },
+      {
+        "model": "Mistral-7B-v0.3",
+        "baselineId": "loongserve_sosp24",
+        "baselineLabel": "ESP",
+        "nSeeds": 20,
+        "loadFactor": 1,
+        "gamma8k": 1.157341028809727,
+        "ratio": {
+          "value": 0.5807340094790712,
+          "ci": [
+            0.5733639215238889,
+            0.5881040974342534
+          ],
+          "comparison": "lower"
+        },
+        "reductionPercent": {
+          "value": 41.92659905209288,
+          "ci": [
+            41.18959025657466,
+            42.663607847611104
+          ]
+        },
+        "mobikvMeanSeconds": 0.5902545000000001,
+        "baselineMeanSeconds": 1.016761
+      },
+      {
+        "model": "Gemma-2-9B-it",
+        "baselineId": "loongserve_sosp24",
+        "baselineLabel": "ESP",
+        "nSeeds": 20,
+        "loadFactor": 1,
+        "gamma8k": 1.3166417508544348,
+        "ratio": {
+          "value": 0.580632897707853,
+          "ci": [
+            0.5739679451314201,
+            0.5872978502842858
+          ],
+          "comparison": "lower"
+        },
+        "reductionPercent": {
+          "value": 41.936710229214704,
+          "ci": [
+            41.27021497157142,
+            42.60320548685799
+          ]
+        },
+        "mobikvMeanSeconds": 0.5519365000000002,
+        "baselineMeanSeconds": 0.9509490000000002
+      }
+    ],
+    "provenance": {
+      "canonicalSource": {
+        "name": "final_20261124/out_20261123/ratio_full.json",
+        "sha256": "7b6f5cce0971c1a5fcc489411e47177e97829f047c8579813420f837fa8d102d"
+      },
+      "publishedAggregate": "docs/data/aggregate/cross_model_full_speed.csv",
+      "verification": "The published aggregate is byte-identical to final_20261124/out_20261123/table_full.csv. Exact paired ratios and t intervals come from ratio_full.json and cannot be recovered from aggregate means and sample standard deviations alone."
+    }
+  }
+}

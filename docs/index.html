@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="./styles.css?v=20" />
+    <link rel="stylesheet" href="./research.css?v=1" />
   </head>
   <body>
     <div class="site-shell">
@@ -81,84 +82,83 @@
             </div>
           </section>
 
-          <section class="section" id="snapshot">
-            <div class="section-head"><h2>Snapshot</h2></div>
-            <div class="body-copy">
-              <p>MobiKV treats the KV cache as a schedulable distributed state. The scheduler tracks cache holders, transfer backlog, compute queues, and decode pressure, then chooses placement and repair actions using the measured transfer-to-recompute ratio <span aria-label="gamma">&gamma;</span>.</p>
-            </div>
-            <div class="table-block">
-              <div class="table-label">Reported outcomes (final campaign, 2026-11-24)</div>
-              <table class="content-table">
-                <thead><tr><th>Measurement</th><th>Reported outcome</th></tr></thead>
-                <tbody>
-                  <tr><td>Cross-model simulation, full-speed point</td><td>8 models &times; 7 policies &times; 20 seeds; MobiKV has the lowest mean follow-up TTFT in 21 of the 24 TTFT cells, and its TPOT is within 7% of the best baseline in every cell</td></tr>
-                  <tr><td>Qwen3-8B simulator <span aria-label="gamma sub 8k">&gamma;<sub>8k</sub></span> sweep</td><td>18 values of <span aria-label="gamma sub 8k">&gamma;<sub>8k</sub></span> &times; 7 policies &times; 20 seeds on full-speed A800 cost profiles; MobiKV's P90 follow-up TTFT is 0.55&ndash;0.80 of the best baseline at every point</td></tr>
-                  <tr><td>RPP on two A800 GPUs</td><td>78 configurations of five models; the speedup reaches 82&ndash;94% of the bound in the 54 configurations with a measured link rate and is 1.78&ndash;1.86&times; for &rho; &lt; 1; the final logits are bitwise identical to chunked prefill in all 510 splits</td></tr>
-                  <tr><td>Replay on three A800 GPUs (Qwen3-8B, constrained point)</td><td>Seven policies, seeds 41&ndash;43 pooled; MobiKV's follow-up TTFT is 0.18 / 2.24 / 7.61 s at P50 / P90 / P99, against 0.30&ndash;0.40 / 4.83&ndash;7.44 / 14.5&ndash;17.7 s for the four load-aware baselines; no send errors or timeouts</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </section>
 
-          <section class="section" id="tasks">
-            <div class="section-head"><h2>Overview</h2></div>
-            <div class="body-copy">
-              <p>Multi-turn requests often revisit a prefix whose KV cache is already present somewhere in the edge cluster. MobiKV keeps that state useful across turns and selects a repair path when the next request lands on a different worker.</p>
-              <p>The design is organized around four operations that share one scheduler state and one measurable ratio. This makes the policy interpretable across homogeneous and heterogeneous replicas.</p>
-            </div>
-            <div class="essay-grid">
-              <div><h3>Cache-aware placement</h3><p>Place a continuation on a worker that already holds the required KV state when queueing and link conditions make reuse beneficial.</p></div>
-              <div><h3>Ratio-guided repair</h3><p>Compare transfer and recomputation using <span aria-label="gamma">&gamma;</span> and retain the lower-cost repair path for each cache segment.</p></div>
-              <div><h3>Replica-assisted prefill</h3><p>Split a long prefill across a replica holder and the executor, streaming layer KV as it becomes available.</p></div>
-              <div><h3>Decode-first replay</h3><p>Give active decode work priority over background replica refresh so repaired state does not increase token-time variance.</p></div>
-            </div>
-            <figure class="figure-block">
-              <img class="figure-media" src="./assets/rho-sweep.svg?v=2" width="1200" height="410" alt="Three panels (P50, P90, P99) of follow-up TTFT against the transfer-to-recompute ratio for MobiKV and six baselines; MobiKV is lowest in every panel." loading="lazy" decoding="async" />
-              <figcaption class="figure-caption">Figure 2. Follow-up TTFT against the transfer-to-recompute ratio <span aria-label="gamma sub 8k">&gamma;<sub>8k</sub></span> for Qwen3-8B on full-speed A800 servers; <span aria-label="gamma sub 8k">&gamma;<sub>8k</sub></span> is varied through the link rate. Lines are means over 20 mobility seeds and bands show &plusmn; one sample standard deviation. The dashed line marks <span aria-label="gamma sub 8k equals 1">&gamma;<sub>8k</sub> = 1</span>.</figcaption>
-            </figure>
-          </section>
+          <div class="research-content">
+            <section class="research-section problem-section" id="tasks" aria-labelledby="problem-title">
+              <p class="section-eyebrow">The problem</p>
+              <div class="problem-layout">
+                <div>
+                  <h2 id="problem-title">The user moves.<br>The conversation continues.</h2>
+                  <p class="research-lead">The next turn may reach a server that does not have the conversation’s KV cache.</p>
+                  <p>Moving or rebuilding that cache can take seconds. Forwarding the request to a server that already holds it adds only milliseconds, but that server may be busy. And even with the cache in place, a long new input still needs prefill.</p>
+                </div>
+                <div class="context-figure" role="img" aria-label="A moving user reaches a new access server. The existing conversation cache remains at another server. MobiKV separates where the request arrives from where it runs.">
+                  <div class="context-conversation"><span class="context-dot"></span>One conversation, many turns</div>
+                  <div class="context-turns"><span>Turn 1</span><span>Turn 2</span><span class="current-turn">Next turn</span></div>
+                  <div class="mobility-track"><span class="past-location">Previous location</span><span class="moving-user"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7" r="3"/><path d="M5 21v-3a7 7 0 0 1 14 0v3"/></svg>User moves</span></div>
+                  <div class="edge-pair"><div class="edge-node cache-node"><span class="server-glyph" aria-hidden="true"></span><strong>Cache holder</strong><small>Conversation KV is here</small><span class="cache-blocks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span></div><div class="edge-node access-node"><span class="server-glyph" aria-hidden="true"></span><strong>New access server</strong><small>Next turn arrives here</small><span class="request-pill">Follow-up request</span></div></div>
+                  <p class="diagram-caption">Where a request arrives need not be where it runs.</p>
+                </div>
+              </div>
+            </section>
 
-          <section class="section" id="analysis">
-            <div class="section-head"><h2>Analysis</h2></div>
-            <div class="body-copy">
-              <p>The end-to-end results are simulated with cost profiles measured on A800 GPUs. Two real-GPU experiments check them: a replay of the job streams of seven policies on three GPUs with real decoding, and a measurement of replica-assisted parallel prefill on two GPUs against its analytical bound.</p>
-              <p>We report median and tail behavior separately because a policy can improve typical follow-up time while still creating queueing spikes. The replay covers one model at the constrained point, on one node whose processes emulate the links.</p>
-            </div>
-            <figure class="figure-block">
-              <img class="figure-media" src="./assets/tradeoff.svg" width="1200" height="410" alt="Two panels of follow-up TTFT and TPOT at P50, P90 and P99 for seven replayed policies with 95% intervals; MobiKV has the lowest TTFT at every percentile." loading="lazy" decoding="async" />
-              <figcaption class="figure-caption">Figure 3. Replay of the job streams of three servers on three A800 GPUs with real decoding (Qwen3-8B, constrained point, seeds 41&ndash;43 pooled): follow-up TTFT and TPOT of seven policies. Bars give 95% bootstrap intervals, resampling requests within each seed. The requests that reach the three servers differ between policies.</figcaption>
-            </figure>
-            <figure class="figure-block">
-              <img class="figure-media" src="./assets/bounds.svg" width="740" height="450" alt="Measured speedup of one-helper RPP against the transfer-to-compute ratio for five models, below the bound min of 2 and 1 plus 1 over rho." loading="lazy" decoding="async" />
-              <figcaption class="figure-caption">Figure 4. Speedup of one-helper RPP over prefill on one GPU, measured on two A800 GPUs, against the bound min{2, 1 + 1/&rho;}. Each point is the best front fraction of one configuration (median of three). Filled marks: the delivered link rate was measured. Hollow marks: the helper's computation limited the arrival, so &rho; is only known to lie on the bar.</figcaption>
-            </figure>
-          </section>
+            <section class="research-section" id="method" aria-labelledby="method-title">
+              <p class="section-eyebrow">The design</p>
+              <h2 id="method-title">One replica, two useful roles.</h2>
+              <p class="research-lead section-intro">MobiKV keeps one replica near the user. It provides another place to run the next turn and a helper for long prefills.</p>
+              <div class="method-grid">
+                <div class="method-step"><span class="method-symbol" aria-hidden="true">↗</span><h3>Choose the executor</h3><p>Compare all servers using cache-repair time, GPU queues and the stalls that new work would cause to active decoding.</p></div>
+                <div class="method-step"><span class="method-symbol" aria-hidden="true">⇄</span><h3>Repair missing KV</h3><p>Transfer the missing cache, recompute it, or overlap both. Account for the work already waiting on the GPU and links.</p></div>
+                <div class="method-step"><span class="method-symbol" aria-hidden="true">∥</span><h3>Split a long prefill</h3><p>A helper computes the front of the input and streams its KV layer by layer while the executor computes the back.</p></div>
+                <div class="method-step"><span class="method-symbol" aria-hidden="true">⟳</span><h3>Refresh between turns</h3><p>Send only the KV added by the latest turn, using idle link capacity. Replica refresh uses no GPU.</p></div>
+              </div>
+              <figure class="research-figure prefill-figure">
+                <picture><source media="(max-width: 600px)" srcset="./assets/rpp-explained-mobile.svg" width="400" height="480"/><img src="./assets/rpp-explained.svg" width="960" height="360" alt="Replica-assisted prefill: the helper and executor already hold the prefix. The helper computes front tokens and streams their per-layer KV to the executor, which computes the back tokens." loading="lazy" decoding="async" /></picture>
+                <figcaption>The replica already has the prefix, so it needs no prefix transfer before helping. The controller uses a split only when the predicted saving is large enough, and discourages repeated splits that stall decoding on the same helper.</figcaption>
+              </figure>
+            </section>
 
-          <section class="section" id="data">
-            <div class="section-head"><h2>Reproduction</h2></div>
-            <div class="body-copy">
-              <p>The public repository contains the simulator, replay drivers, configuration files, figure sources, and compact aggregate releases used by the project page. The data release records the workload settings, seed aggregation, and reporting units needed to reproduce the headline plots.</p>
-              <p>Start with the <a href="https://github.com/WenbinWang12/MobiKV/blob/main/docs/REPRODUCIBILITY.md" target="_blank" rel="noopener">reproducibility notes</a>, then use the <a href="https://github.com/WenbinWang12/MobiKV/blob/main/docs/EXPERIMENTS.md" target="_blank" rel="noopener">experiment map</a> to connect each figure to its entry point.</p>
-            </div>
-            <div class="essay-grid">
-              <div><h3>Code and configurations</h3><p><a href="https://github.com/WenbinWang12/MobiKV" target="_blank" rel="noopener">GitHub</a> contains the implementation and configuration templates for the simulator and online replay.</p></div>
-              <div><h3>Aggregate data</h3><p>The <a href="https://github.com/WenbinWang12/MobiKV/tree/main/docs/data" target="_blank" rel="noopener">data release</a> contains sanitized summaries and the field definitions used in the tables and figures.</p></div>
-            </div>
-          </section>
+            <section class="research-section" id="analysis" aria-labelledby="results-title">
+              <p class="section-eyebrow">Experimental results</p>
+              <h2 id="results-title">Less waiting for the next answer.</h2>
+              <p class="research-lead section-intro">We evaluate the controller in trace-driven simulations, then test its prefill mechanism and replay its jobs on real GPUs.</p>
 
-          <section class="section citation-section" id="citation">
-            <div class="section-head"><h2>Citation</h2></div>
-            <div class="citation-card">
-              <p>The paper is not public yet. Until the arXiv entry is available, please cite the project as follows.</p>
-              <pre class="citation-code"><code>@misc{wang2026mobikv,
+              <div class="evidence-block">
+                <div class="evidence-heading"><span class="evidence-kind">Simulation</span><h3>Lower P90 TTFT across six standard-attention models</h3></div>
+                <div class="simulation-layout"><div class="result-takeaway"><span class="result-number">27–42<span>%</span></span><p>lower P90 time to first token<br>than the best baseline</p><small>One A800 per server · 10 Gb/s links<br>20 mobility seeds</small></div><div><div class="model-bars" id="model-bars"><p>Full results are available in the <a href="./data/aggregate/cross_model_full_speed.csv">cross-model data</a>.</p></div><p class="chart-footnote">Each model is compared with its best baseline for P90 TTFT. Reductions use the mean paired ratio across seeds.</p></div></div>
+                <p class="result-boundary">The study includes eight models. For the two hybrid-attention models, cache transfers are already cheap at 10 Gb/s; MobiKV does not improve every percentile.</p>
+              </div>
+
+              <div class="evidence-block replay-block">
+                <div class="evidence-heading"><span class="evidence-kind">Real-GPU replay</span><h3>P90 TTFT falls from 4.83 s to 2.24 s</h3></div>
+                <p class="evidence-description">Qwen3-8B on three A800 GPUs in one node, with a 25% GPU share per process and paced 0.93 Gb/s links. Results pool mobility seeds 41–43.</p>
+                <div class="replay-headline"><div><strong>54<span>%</span></strong><p>lower P90 TTFT<br>than Mooncake, the best baseline</p></div><div><strong>33.9<span>ms</span></strong><p>median time per output token<br>versus 33.6 ms for the best baseline</p></div></div>
+                <div class="results-explorer" id="replay-explorer">
+                  <div class="chart-controls"><div class="metric-switch" role="group" aria-label="Latency metric"><button type="button" class="is-selected" data-metric="ttft" aria-pressed="true">Time to first token</button><button type="button" data-metric="tpot" aria-pressed="false">Time per output token</button></div><div class="percentile-switch" role="group" aria-label="Request percentile"><button type="button" data-percentile="P50" aria-pressed="false">P50</button><button type="button" data-percentile="P90" class="is-selected" aria-pressed="true">P90</button><button type="button" data-percentile="P99" aria-pressed="false">P99</button></div></div>
+                  <div class="chart-heading"><h4 id="replay-chart-title">P90 time to first token</h4><span id="replay-chart-unit">Seconds · lower is better</span></div>
+                  <div class="replay-bars" id="replay-bars" role="img" aria-label="P90 TTFT: MobiKV 2.24 seconds, Mooncake 4.83 seconds. See the downloadable data for all results."><p><a href="./data/aggregate/replay_three_gpu_pooled.csv">View the replay measurements and confidence intervals</a>.</p></div>
+                  <div class="chart-key"><span><i class="key-point"></i>Percentile estimate</span><span><i class="key-interval"></i>95% bootstrap interval</span></div>
+                  <p class="chart-reading" id="chart-reading" aria-live="polite">MobiKV reduces P90 TTFT by 54% relative to the best baseline.</p>
+                </div>
+                <p class="chart-footnote">The chart shows MobiKV and four load-aware baselines. Policies send different requests to the three servers. Intervals resample requests within each seed; comparisons do not pair requests across policies.</p>
+                <details class="research-details"><summary>All seven policies and confidence intervals</summary><div class="research-table-wrap"><table class="research-table" id="replay-table"><caption id="replay-table-caption">P90 TTFT in seconds; estimates with 95% bootstrap intervals.</caption><thead><tr><th scope="col">Policy</th><th scope="col">Requests</th><th scope="col">Estimate</th><th scope="col">95% interval</th></tr></thead><tbody></tbody></table></div><p class="detail-note">The table follows the metric and percentile selected above. <a href="./data/aggregate/replay_three_gpu_pooled.csv" download>Download all pooled results (CSV)</a>.</p></details>
+              </div>
+
+              <div class="evidence-block mechanism-block"><div class="evidence-heading"><span class="evidence-kind">Two-GPU mechanism test</span><h3>One helper makes long prefills 1.65–1.89× faster</h3></div><p>Across 21 configurations with at least 4k new tokens and a transfer-to-compute ratio known to be below 1, RPP shortens prefill on five models. In all 510 tested split configurations, its logits are bitwise identical to chunked prefill at the same split boundary.</p><details class="research-details"><summary>View measurements against the one-helper bound</summary><figure class="research-figure bound-figure"><img src="./assets/bounds.svg" width="740" height="450" loading="lazy" decoding="async" alt="One-helper RPP speedup on five models, compared with the ideal bound min(2, 1 + 1/rho). Filled points have measured delivered link rates; hollow points have intervals for rho."/><figcaption>78 model, GPU-share, turn-length and link-rate configurations. In the 54 configurations with measured delivered link rates, speedup reaches 82–94% of the one-helper bound. Each point uses the best tested split and the median of three runs.</figcaption></figure></details></div>
+            </section>
+
+            <section class="research-section" id="conditions" aria-labelledby="conditions-title"><p class="section-eyebrow">What determines the gain?</p><h2 id="conditions-title">Cache movement and prefill have different costs.</h2><div class="ratio-columns"><div><h3>Repairing an existing prefix</h3><p class="ratio-definition"><span>γ</span> = transfer time / recompute time</p><p>This ratio helps decide how much missing KV to transfer and how much to rebuild. The experiment below varies the link rate for an 8k-token context.</p></div><div><h3>Prefilling the new input</h3><p class="ratio-definition"><span>ρ</span> = new-KV transfer time / compute time</p><p>In the idealized model, one helper reaches the prefill-time lower bound when ρ ≥ 1. Faster links can make more helpers useful.</p></div></div><figure class="research-figure sweep-figure"><img src="./assets/rho-sweep.svg?v=2" width="1200" height="410" alt="Qwen3-8B follow-up TTFT at P50, P90 and P99 over 18 transfer-to-recompute ratios. MobiKV is compared with six baselines." loading="lazy" decoding="async"/><figcaption>Qwen3-8B, full-speed GPUs, 18 link-rate settings and 20 mobility seeds. Lines are means; bands show one sample standard deviation. Across these settings, MobiKV’s P90 TTFT is 0.55–0.80 of the best baseline.</figcaption></figure><details class="research-details"><summary>Assumptions behind the prefill bound</summary><p>The bound assumes equal GPU and link rates, costs proportional to token counts, helpers that already hold the prefix, idle resources, and negligible layer-pipeline startup. The controller uses a separate finish-time model to account for startup and queues. The current implementation evaluates at most one helper; extending it to multiple helpers when transfers are much faster than computation is future work.</p></details></section>
+
+            <section class="research-section" id="data" aria-labelledby="data-title"><p class="section-eyebrow">Code and data</p><h2 id="data-title">Explore the evidence.</h2><p class="section-intro">The released aggregates contain the cross-model results, ratio sweep, two-GPU measurements and three-GPU replay used on this page.</p><div class="resource-grid"><a class="research-resource" href="https://github.com/WenbinWang12/MobiKV" target="_blank" rel="noopener"><span>Implementation</span><h3>Source repository</h3><p>Simulator, GPU measurement tools and project documentation.</p></a><a class="research-resource" href="./data/README.md"><span>Measurements</span><h3>Released data</h3><p>Final evaluation aggregates, units, policy names and file descriptions.</p></a><a class="research-resource" href="https://github.com/WenbinWang12/MobiKV/blob/main/docs/REPRODUCIBILITY.md" target="_blank" rel="noopener"><span>Getting started</span><h3>Reproduction notes</h3><p>Environment setup, input traces and experiment entry points.</p></a></div><p class="release-note"><strong>Release status.</strong> The final evaluation aggregates are public. The repository’s simulator and reproduction scripts still reflect the earlier design; the code that produced the final campaign has not yet been merged.</p></section>
+
+            <section class="research-section" id="citation" aria-labelledby="citation-title"><div class="citation-heading"><div><p class="section-eyebrow">Reference</p><h2 id="citation-title">Cite MobiKV</h2></div><button class="copy-citation" type="button" id="copy-citation">Copy BibTeX</button></div><p>The paper is not public yet. This citation points to the project repository.</p><pre class="research-citation"><code id="bibtex">@misc{wang2026mobikv,
   title  = {MobiKV: Replica-Assisted KV Cache Scheduling for Multi-Turn LLM Serving at the Mobile Edge},
   author = {Wang, Wenbin and Wang, Runan and Liu, Jiangchuan and Hu, Xiping},
   year   = {2026},
   note   = {Preprint forthcoming},
   url    = {https://github.com/WenbinWang12/MobiKV}
-}</code></pre>
-            </div>
-          </section>
+}</code></pre><span class="copy-status" id="copy-status" role="status"></span></section>
+          </div>
 
         </article>
       </main>
@@ -168,5 +168,6 @@
         <div class="footer-links"><a href="https://github.com/WenbinWang12/MobiKV" target="_blank" rel="noopener">GitHub</a></div>
       </footer>
     </div>
+    <script src="./research.js?v=1" defer></script>
   </body>
 </html>
