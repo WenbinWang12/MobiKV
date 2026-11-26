@@ -2,7 +2,7 @@
   "source": "final evaluation campaign, 2026-11-24",
   "algorithm": "SHA-256",
   "files": {
-    "docs/data/README.md": "3877546daacf8ddbb7d10283550d67b510eae2d7d8c1c8bee504bc6592610d93",
+    "docs/data/README.md": "0e8dbdb2ce3dc5a70a5c33d3c979e1e87fda590a23b7953554a32769c159d0de",
     "docs/data/aggregate/cross_model_constrained.csv": "8026d70a746e52bcd433ff49f16bdf0aa544a7920099328bd018d0f8dd9cb390",
     "docs/data/aggregate/cross_model_full_speed.csv": "8a8300407323c27e5e1bfa81be21dedd3de7596a8e06cf1893dc5e427e99c0dc",
     "docs/data/aggregate/cross_model_full_speed_slow_links.csv": "b04221aa86ac0aafa752de7485ea6f08eeef4e3c29881593412658cde28fdf3b",
@@ -10,6 +10,6 @@
     "docs/data/aggregate/replay_three_gpu_pooled.csv": "372d5e49ace0568166e32ab978ca873ca2e9d29584421d41fac3f38bf02ea12f",
     "docs/data/aggregate/rho_sweep_qwen3_a800.csv": "468ab69ebb119b1b536e87d701e4701a45f7670d5ad0b2110c331031aa0784f4",
     "docs/data/aggregate/rpp_two_gpu_cells.csv": "a85b4436deef7eee497ca75d4b084aa34c71f16c1654ca742d8f0f20bf57b993",
-    "docs/data/model_matrix.json": "45f955d83a1719b93136224e30557d79f1fecf3ae711412e7bb06dc55fd88588"
+    "docs/data/aggregate/simulation_seeds.csv": "0886c889f411c3061e8fd15f25dbe1cd85df8452bb36c6001163ee2bd489563e"
   }
 }

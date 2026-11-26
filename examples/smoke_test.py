@@ -19,15 +19,15 @@ def make_trace(path: Path) -> None:
     # Two short sessions with a continuation sharing a prefix.  The simulator
     # uses hash_ids to reconstruct the parent relation.
     for sid, start in enumerate((0, 2500)):
-        h0 = [f"s{sid}-b{i}" for i in range(64)]
+        h0 = [f"s{sid}-b{i}" for i in range(8)]
         rows.append(
             {"timestamp": start * 1000, "input_length": 4096, "output_length": 16, "hash_ids": h0}
         )
-        h1 = h0 + [f"s{sid}-new{i}" for i in range(1024)]
+        h1 = h0 + [f"s{sid}-new{i}" for i in range(8)]
         rows.append(
             {
                 "timestamp": (start + 120) * 1000,
-                "input_length": 5120,
+                "input_length": 8192,
                 "output_length": 16,
                 "hash_ids": h1,
             }
@@ -63,20 +63,18 @@ def main() -> None:
         cmd = [
             sys.executable,
             str(ROOT / "scripts" / "run_mobikv.py"),
-            "--preset",
-            "mobikv-df-rpp",
+            "--method",
+            "mobikv",
             "--trace",
             str(trace),
             "--trips",
             str(trips),
             "--costs",
-            str(ROOT / "configs" / "costs_v1.json"),
+            str(ROOT / "configs" / "costs_a800.json"),
             "--out",
             str(out),
             "--seed",
-            "1",
-            "--eval_start",
-            "1",
+            "41",
             "--tpot",
             "1",
             "--side_cells",

@@ -24,7 +24,7 @@ import threading
 import time
 
 import torch
-from ct_hybrid import (
+from .ct_hybrid import (
     ctx_ids,
     load_model,
     model_head_dim,

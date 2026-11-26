@@ -1,0 +1,82 @@
+[
+  {
+    "source": "claude_20261122/code/ct_grid2.py",
+    "target": "mobikv/measurement/profile_costs.py",
+    "source_sha256": "487d4042204ae33dbf77b9da42b886a521885c181bcd58f89ef89c2a11de9dcf",
+    "target_sha256": "fd496fd6447eaf91704d123a3c0fc82bec09a7364fe29f7fc72577139d1ba3fa",
+    "changes": [
+      "GPU imports follow argparse so --help needs only the standard library",
+      "module name and introductory provenance wording"
+    ]
+  },
+  {
+    "source": "claude_20261122/code/build_costs.py",
+    "target": "mobikv/measurement/build_costs.py",
+    "source_sha256": "21d3327ff1f4d591aa7187dd34ceff6ef4d538882ccf5293978e1bc38562c130",
+    "target_sha256": "eccf78c2e42ca0c8cbd9557f7a7cbff9f711d3859d86e2e0efc21d7944b44f0f",
+    "changes": [
+      "public module name and usage",
+      "empty default --keep for final measured models",
+      "portable source filename metadata via pathlib; numeric fitting unchanged"
+    ]
+  },
+  {
+    "source": "claude_20261123/code/sv3_replay_v2.py",
+    "target": "mobikv/measurement/replay.py",
+    "source_sha256": "4cedf8c3c4ea03a36413f849a438c875be0c83634b2d76d458429773006af507",
+    "target_sha256": "23f10ec5c3681e0c3b98b17aa961417115eca8d202db851829151386a97f3e3b",
+    "changes": [
+      "package-relative helper import",
+      "GPU imports follow argparse",
+      "module name and introductory wording"
+    ]
+  },
+  {
+    "source": "claude_20261123/code/replay_pool.py",
+    "target": "mobikv/analysis/replay.py",
+    "source_sha256": "256984cfa47ec882aa6ffe546f301ab97277ba19cd3869b20ca87af45bfc9b92",
+    "target_sha256": "f20cf98edf613ac54cbe2e7f4e06c9fecb1ccd66a1e65f57cf61d96c1739715d",
+    "changes": [
+      "public module name in documentation only"
+    ]
+  },
+  {
+    "source": "claude_20261123/code/rpp_cells.py",
+    "target": "mobikv/analysis/rpp.py",
+    "source_sha256": "176376cd9d7d66aadd22b2690c412320f72ab4b44e96a2d2eac38047ae5fbea1",
+    "target_sha256": "418f49faf3c3a4e297ae9bfbf1c4e7712ee49045427d4b6452b1e616d6148032",
+    "changes": [
+      "public module name in documentation only"
+    ]
+  },
+  {
+    "source": "claude_20261122/code/MobiKV/mobikv/measurement/ct_hybrid.py",
+    "target": "mobikv/measurement/ct_hybrid.py",
+    "source_sha256": "02d42a66b5c59d7397ac1e4202c52077be1b472607b5234f26b0ce6e38118907",
+    "target_sha256": "2d2be73d49ba9459b82774a554f8e85d02c798d9f4dfff4bdbef85eef87aa741",
+    "changes": [
+      "retained existing published formatting and equivalent simplifications",
+      "package-relative imports for ct_pp and ct_pp2"
+    ]
+  },
+  {
+    "source": "claude_20261122/code/MobiKV/mobikv/measurement/ct_pp.py",
+    "target": "mobikv/measurement/ct_pp.py",
+    "source_sha256": "c8b1a7b165b837bf1ddf06918f176f81f27521d60bf3ed409f940c60b046e484",
+    "target_sha256": "42ba4a66ae181d6177fa6f7b45d4a90b806ecc770d623d5fd1544a8ffc23af42",
+    "changes": [
+      "retained existing published formatting and equivalent simplifications",
+      "package-relative imports for ct_pp and ct_pp2"
+    ]
+  },
+  {
+    "source": "claude_20261122/code/MobiKV/mobikv/measurement/ct_pp2.py",
+    "target": "mobikv/measurement/ct_pp2.py",
+    "source_sha256": "5afaf1979129051ff1b1972f1e355855f8a87c3e4ab6470bf14f6f16984c3e09",
+    "target_sha256": "cb10bc2be7e68d4116cdfabce880fda65d4738c2e7eca7c130cffe749fb8d51f",
+    "changes": [
+      "retained existing published formatting and equivalent simplifications",
+      "package-relative imports for ct_pp and ct_pp2"
+    ]
+  }
+]

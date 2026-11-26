@@ -19,8 +19,8 @@ import threading
 import time
 
 import torch
-from ct_hybrid import ctx_ids, load_model, model_vocab_size, paced_send, recv_msg, send_msg
-from ct_pp import clone_cache, prefix_cache
+from .ct_hybrid import ctx_ids, load_model, model_vocab_size, paced_send, recv_msg, send_msg
+from .ct_pp import clone_cache, prefix_cache
 
 
 def geom(model):

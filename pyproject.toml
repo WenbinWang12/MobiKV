@@ -25,7 +25,6 @@ gpu = [
     "huggingface_hub==1.29.0",
     "safetensors",
 ]
-wildchat = ["pyarrow>=18.0"]
 plot = ["matplotlib>=3.8"]
 dev = ["pytest>=8", "ruff>=0.8"]
 
@@ -45,6 +44,14 @@ testpaths = ["tests"]
 [tool.ruff]
 line-length = 100
 target-version = "py310"
+# Preserve the frozen scientific implementation; compile and regression-test it.
+# Lint and format checks still cover the public runners, configuration and tests.
+extend-exclude = [
+    "mobikv/simulator.py",
+    "mobikv/measurement/*.py",
+    "mobikv/analysis/replay.py",
+    "mobikv/analysis/rpp.py",
+]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B"]

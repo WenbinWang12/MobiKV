@@ -77,12 +77,25 @@ def save(fig, out: Path) -> None:
     print(f"wrote {out}.svg and {out}.png")
 
 
-def plot_bound(cells: list[dict], out: Path) -> None:
-    """Speedup of one-helper RPP on two GPUs against min(2, 1 + 1/rho)."""
-    fig, ax = plt.subplots(figsize=(7.4, 4.5), constrained_layout=True)
+def plot_bound(cells: list[dict], out: Path, paper: bool = False) -> None:
+    """Speedup of one-helper RPP on two GPUs against min(2, 1 + 1/rho).
+
+    With ``paper``, the figure is written as a PDF at the width of one IEEE column with 8 pt text.
+    """
+    size, base = ((3.45, 2.35), 8.0) if paper else ((7.4, 4.5), 12.0)
+    k = base / 12.0
+    with plt.rc_context({"font.size": base, "axes.linewidth": 0.8 * k**0.5, "pdf.fonttype": 42}):
+        _plot_bound(cells, out, paper, size, k)
+
+
+def _plot_bound(cells: list[dict], out: Path, paper: bool, size: tuple, k: float) -> None:
+    fig, ax = plt.subplots(figsize=size, constrained_layout=True)
+    area = 30 * k**1.5
     xs = [0.12 * (13 / 0.12) ** (i / 400) for i in range(401)]
-    ax.plot(xs, [min(2.0, 1 + 1 / x) for x in xs], color=INK, linewidth=1.3, zorder=2)
-    handles = [Line2D([], [], color=INK, linewidth=1.3, label=r"bound $\min\{2,\,1+1/\rho\}$")]
+    ax.plot(xs, [min(2.0, 1 + 1 / x) for x in xs], color=INK, linewidth=1.3 * k**0.5, zorder=2)
+    handles = [
+        Line2D([], [], color=INK, linewidth=1.3 * k**0.5, label=r"bound $\min\{2,\,1+1/\rho\}$")
+    ]
     for model, colour, marker in MODELS:
         rows = [r for r in cells if r["model"] == model]
         measured = [r for r in rows if r["verified"] == "1"]
@@ -90,7 +103,7 @@ def plot_bound(cells: list[dict], out: Path) -> None:
         ax.scatter(
             [float(r["rho"]) for r in measured],
             [float(r["speedup"]) for r in measured],
-            s=30,
+            s=area,
             marker=marker,
             color=colour,
             linewidths=0,
@@ -102,20 +115,30 @@ def plot_bound(cells: list[dict], out: Path) -> None:
             [float(r["rho_min"]) for r in bounded],
             [float(r["rho_max"]) for r in bounded],
             color=colour,
-            linewidth=0.9,
+            linewidth=0.9 * k**0.5,
             zorder=3,
         )
         ax.scatter(
             [float(r["rho_min"]) for r in bounded],
             [float(r["speedup"]) for r in bounded],
-            s=30,
+            s=area,
             marker=marker,
             facecolors="white",
             edgecolors=colour,
-            linewidths=1.0,
+            linewidths=1.0 * k**0.5,
             zorder=4,
         )
-        handles.append(Line2D([], [], color=colour, marker=marker, linestyle="", label=model))
+        handles.append(
+            Line2D(
+                [],
+                [],
+                color=colour,
+                marker=marker,
+                markersize=6 * k**0.75,
+                linestyle="",
+                label=model,
+            )
+        )
     ax.set_xscale("log")
     ax.set_xlim(0.12, 13)
     ax.set_ylim(0.92, 2.08)
@@ -124,8 +147,29 @@ def plot_bound(cells: list[dict], out: Path) -> None:
     ax.xaxis.set_minor_formatter(NullFormatter())
     ax.set_xlabel(r"Transfer-to-compute ratio $\rho$ of the turn")
     ax.set_ylabel("Speedup over one GPU")
-    tidy(ax)
-    ax.legend(handles=handles, loc="lower left", frameon=False, fontsize=10.5, handlelength=1.6)
+    ax.grid(True, which="major", color=GRID, linewidth=0.7 * k**0.5, zorder=0)
+    ax.tick_params(length=3 * k, width=0.8 * k**0.5)
+    for side in ("top", "right"):
+        ax.spines[side].set_visible(False)
+    # The region above the bound for rho > 1 holds no data, so the legend sits there.
+    ax.legend(
+        handles=handles,
+        loc="upper right",
+        bbox_to_anchor=(1.0, 1.0),
+        borderaxespad=0.2,
+        frameon=True,
+        framealpha=1.0,
+        facecolor="white",
+        edgecolor="none",
+        fontsize=10.5 * k,
+        handlelength=1.6,
+        labelspacing=0.35,
+    )
+    if paper:
+        fig.savefig(out.with_suffix(".pdf"), facecolor="white")
+        plt.close(fig)
+        print(f"wrote {out}.pdf")
+        return
     save(fig, out)
 
 
@@ -176,8 +220,14 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--data", type=Path, default=ROOT / "docs/data/aggregate")
     parser.add_argument("--out", type=Path, default=ROOT / "docs/assets")
+    parser.add_argument(
+        "--paper-bound", type=Path, help="write only the RPP bound figure as a print-size PDF here"
+    )
     args = parser.parse_args()
     plt.rcParams.update(STYLE)
+    if args.paper_bound:
+        plot_bound(read(args.data / "rpp_two_gpu_cells.csv"), args.paper_bound, paper=True)
+        return
     plot_bound(read(args.data / "rpp_two_gpu_cells.csv"), args.out / "bounds")
     plot_replay(read(args.data / "replay_three_gpu_pooled.csv"), args.out / "tradeoff")
 

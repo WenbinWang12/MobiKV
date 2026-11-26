@@ -1,38 +1,49 @@
-# MobiKV data-release plan
+# Data and citations
 
-The artifact separates executable code from data that carries licensing, privacy, or infrastructure information.
+## Included in this repository
 
-## Release in GitHub
+The release contains the final simulator and GPU source, measured A800 cost profiles, experiment launchers, analysis and plotting code, and the evaluation summaries under [`data/`](data/README.md). The aggregate files record model, policy, operating point, latency statistics, and sample counts. Their units and provenance are listed in the data directory.
 
-- simulator and measurement source code;
-- frozen configuration files and cost-model schemas;
-- figure sources and aggregation scripts;
-- aggregate tables of the final evaluation campaign (cross-model simulation, ratio sweep, two-GPU RPP, three-GPU replay) with a hash manifest; and
-- small synthetic fixtures used by the CPU smoke test.
+The public request and mobility traces remain with their original providers. Download them separately and record the source version and a local checksum when running an experiment. Model weights, raw prompts, generated text, per-request replay logs, host names, network addresses, and machine-specific paths are not distributed with the aggregates. Small synthetic fixtures support CPU checks without these inputs.
 
-## Link to original providers
+The GPU source is included for reproduction on a suitable system. Its presence does not mean that the GPU experiments were rerun locally for this release. See [GPU reproduction](GPU_REPRODUCTION.md) and [Evaluation](EVALUATION.md).
 
-GeoLife, Porto taxi, WildChat, and the Mooncake conversation trace keep their original provenance and terms. Source links, licenses, and the references to cite are listed under "Third-party data and models" in the repository README. The repository provides preprocessing scripts and the expected schemas. A user downloads each source from its original provider and records a local source hash in the manifest.
+## Third-party data and models
 
-## Hugging Face dataset
+Download each dataset from its provider, follow its terms, and cite its authors. The licenses below are the ones stated by the providers at the time of writing; the provider's page is authoritative.
 
-The recommended dataset release is `WenbinWang12/MobiKV-data`. The current GitHub artifact already contains the sanitized aggregate payload. A Hugging Face upload should be made after the paper revision is frozen so its dataset card, DOI metadata, and exact commit can be aligned. It should contain:
+| Dataset | Use in MobiKV | Source | Terms | Reference |
+| --- | --- | --- | --- | --- |
+| GeoLife GPS Trajectories 1.3 | Main mobility trace | [Microsoft Research](https://www.microsoft.com/en-us/download/details.aspx?id=52367) | Terms in the user guide shipped with the download; the provider asks users to cite [1]-[3] | [1]-[3] |
+| Mooncake conversation trace | Main request trace | [`FAST25-release/traces`](https://github.com/kvcache-ai/Mooncake/tree/main/FAST25-release/traces) in kvcache-ai/Mooncake | Apache-2.0 (repository license) | [4] |
+| Taxi Service Trajectory (ECML PKDD 2015), Porto | Mobility robustness | [UCI Machine Learning Repository, dataset 339](https://archive.ics.uci.edu/dataset/339) | CC BY 4.0 | [5] |
 
-```text
-aggregate/
-  cross_model_full_speed.csv
-  cross_model_constrained.csv
-  cross_model_full_speed_slow_links.csv
-  rho_sweep_qwen3_a800.csv
-  rpp_two_gpu_cells.csv
-  replay_three_gpu.csv
-  replay_three_gpu_pooled.csv
-manifests/
-  source_hashes.json
-```
+Model weights are not part of this repository. Each model in [`configs/model_matrix.json`](../configs/model_matrix.json) is governed by the license on its own model card. Some families, such as Llama and Gemma, require you to accept their terms before download. Obtain the weights from the official publisher and comply with those terms, including any restrictions on use and redistribution.
 
-The dataset should contain timing, percentile, seed, model, policy, ratio, hardware, and software metadata. It should exclude raw prompts, generated text, tokens, hostnames, IP addresses, credentials, local paths, and model weights. Raw replay JSON records should be reduced to aggregate rows before upload.
+The project page stylesheet is adapted from an MIT-licensed project page; see [`THIRD_PARTY_NOTICES.md`](../THIRD_PARTY_NOTICES.md).
 
-## Long-term archive
+## Baselines
 
-After the paper version and data card are final, the GitHub release and Hugging Face dataset can be mirrored to Zenodo for a DOI. The Git tag, paper checksum, dataset revision, and source manifests should be recorded together.
+The six baselines are our adaptations of published policies to KV cache scheduling at the mobile edge. They are reimplemented in `mobikv/simulator.py`; no code from the original systems is included.
+
+| Baseline | Adapted from |
+| --- | --- |
+| Follow-Me | Follow Me Cloud [6] |
+| MDP | MDP-based service migration [7] |
+| Lyapunov | Lyapunov-based dynamic service placement [8] |
+| Preble | Preble prompt-aware scheduling [9] |
+| Mooncake | The Mooncake KVCache-centric scheduler [4] |
+| ESP | LoongServe elastic sequence parallelism [10] |
+
+## References
+
+1. Y. Zheng, L. Zhang, X. Xie, and W.-Y. Ma. Mining interesting locations and travel sequences from GPS trajectories. WWW, 2009.
+2. Y. Zheng, Q. Li, Y. Chen, X. Xie, and W.-Y. Ma. Understanding mobility based on GPS data. UbiComp, 2008.
+3. Y. Zheng, X. Xie, and W.-Y. Ma. GeoLife: A collaborative social networking service among user, location and trajectory. IEEE Data Engineering Bulletin, 33(2), 2010.
+4. R. Qin, Z. Li, W. He, J. Cui, F. Ren, M. Zhang, Y. Wu, W. Zheng, and X. Xu. Mooncake: Trading more storage for less computation, a KVCache-centric architecture for serving LLM chatbot. USENIX FAST, 2025.
+5. Taxi Service Trajectory, Prediction Challenge, ECML PKDD 2015. UCI Machine Learning Repository, dataset 339.
+6. T. Taleb and A. Ksentini. Follow Me Cloud: Interworking federated clouds and distributed mobile networks. IEEE Network, 27(5), 2013.
+7. S. Wang, R. Urgaonkar, M. Zafer, T. He, K. Chan, and K. K. Leung. Dynamic service migration in mobile edge computing based on Markov decision process. IEEE/ACM Transactions on Networking, 27(3), 2019.
+8. T. Ouyang, Z. Zhou, and X. Chen. Follow me at the edge: Mobility-aware dynamic service placement for mobile edge computing. IEEE Journal on Selected Areas in Communications, 36(10), 2018.
+9. V. Srivatsa, Z. He, R. Abhyankar, D. Li, and Y. Zhang. Preble: Efficient distributed prompt scheduling for LLM serving. ICLR, 2025.
+10. B. Wu, S. Liu, Y. Zhong, P. Sun, X. Liu, and X. Jin. LoongServe: Efficiently serving long-context large language models with elastic sequence parallelism. ACM SOSP, 2024.

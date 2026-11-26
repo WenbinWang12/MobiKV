@@ -1,21 +1,12 @@
 {
-  "common_context_grid_tokens": [1024, 2048, 4096, 8192],
+  "common_context_grid_tokens": [
+    1024,
+    2048,
+    4096,
+    8192
+  ],
   "dtype": "bfloat16",
   "models": [
-    {
-      "name": "Llama-2-7B",
-      "repo_id": "meta-llama/Llama-2-7b",
-      "revision": null,
-      "family": "Llama-2",
-      "attention": "MHA",
-      "layers": 32,
-      "attention_heads": 32,
-      "kv_heads": 32,
-      "head_dim": 128,
-      "kv_bytes_per_token": 524288,
-      "native_context": 4096,
-      "status": "planned"
-    },
     {
       "name": "Llama-3.1-8B",
       "repo_id": "LLM-Research/Meta-Llama-3.1-8B-Instruct",
@@ -28,7 +19,8 @@
       "head_dim": 128,
       "kv_bytes_per_token": 131072,
       "native_context": 131072,
-      "status": "downloaded-smoke-passed-ct-latency-agreement-failed"
+      "status": "measured-a800-full-and-quarter-share",
+      "simulator_context_limit": 32768
     },
     {
       "name": "Qwen2.5-7B",
@@ -42,7 +34,8 @@
       "head_dim": 128,
       "kv_bytes_per_token": 57344,
       "native_context": 32768,
-      "status": "existing-baseline"
+      "status": "measured-a800-full-and-quarter-share",
+      "simulator_context_limit": 32768
     },
     {
       "name": "Qwen2.5-14B",
@@ -56,7 +49,8 @@
       "head_dim": 128,
       "kv_bytes_per_token": 196608,
       "native_context": 32768,
-      "status": "existing-baseline"
+      "status": "measured-a800-full-and-quarter-share",
+      "simulator_context_limit": 32768
     },
     {
       "name": "Qwen3-8B",
@@ -70,7 +64,8 @@
       "head_dim": 128,
       "kv_bytes_per_token": 147456,
       "native_context": 40960,
-      "status": "downloaded-smoke-passed-ct-complete"
+      "status": "measured-a800-full-and-quarter-share",
+      "simulator_context_limit": 32768
     },
     {
       "name": "Qwen3.5-9B",
@@ -82,10 +77,15 @@
       "attention_heads": 16,
       "kv_heads": 4,
       "head_dim": 256,
-      "kv_bytes_per_token": null,
+      "kv_bytes_per_token": 32768.0,
       "native_context": 262144,
-      "status": "downloaded-smoke-passed-architecture-excluded",
-      "notes": "Hybrid Gated DeltaNet/Gated Attention; fit recurrent state separately"
+      "status": "measured-a800-full-and-quarter-share",
+      "simulator_context_limit": 32768,
+      "state_model": {
+        "const": 51904512.0,
+        "kappa_win": 0.0,
+        "win": 0
+      }
     },
     {
       "name": "Qwen3.8-27B",
@@ -97,10 +97,15 @@
       "attention_heads": 24,
       "kv_heads": 4,
       "head_dim": 256,
-      "kv_bytes_per_token": null,
+      "kv_bytes_per_token": 65536.0,
       "native_context": 262144,
-      "status": "downloaded-smoke-passed-architecture-excluded",
-      "notes": "Hybrid Gated DeltaNet/Gated Attention; fit recurrent state separately"
+      "status": "measured-a800-full-and-quarter-share",
+      "simulator_context_limit": 32768,
+      "state_model": {
+        "const": 154927104.0,
+        "kappa_win": 0.0,
+        "win": 0
+      }
     },
     {
       "name": "Mistral-7B-v0.3",
@@ -114,7 +119,8 @@
       "head_dim": 128,
       "kv_bytes_per_token": 131072,
       "native_context": 32768,
-      "status": "downloaded-smoke-passed-ct-complete"
+      "status": "measured-a800-full-and-quarter-share",
+      "simulator_context_limit": 32768
     },
     {
       "name": "Gemma-2-9B-it",
@@ -126,9 +132,15 @@
       "attention_heads": 16,
       "kv_heads": 8,
       "head_dim": 256,
-      "kv_bytes_per_token": 344064,
+      "kv_bytes_per_token": 172032.0,
       "native_context": 8192,
-      "status": "downloaded-smoke-passed-ct-complete"
+      "status": "measured-a800-full-and-quarter-share",
+      "simulator_context_limit": 8192,
+      "state_model": {
+        "const": 0.0,
+        "kappa_win": 172032.0,
+        "win": 4095
+      }
     }
   ]
 }
